@@ -1,0 +1,13 @@
+//Modified
+src/component/account/ManageOrder/CardOrder	-	btnLeft
+src/component/account/SignIn			-	them ComponentDidmount
+src/component/account/SignUp			-	ComponentDidmount (83-88)
+src/component/admin/AddProduct		
+src/component/admin/HomeAd			-	136 vs 161
+
+
+
+
+//New
+src/images/add_image.png
+src/component/admin/Chat
