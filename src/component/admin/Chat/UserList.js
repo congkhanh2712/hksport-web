@@ -10,6 +10,12 @@ import MenuItem from '@material-ui/core/MenuItem';
 import avatar from '../../../images/ic_avatar.png';
 import InputAdornment from '@material-ui/core/InputAdornment';
 import SearchIcon from '@material-ui/icons/Search';
+import CircularProgress from '@material-ui/core/CircularProgress';
+import Checkbox from '@material-ui/core/Checkbox';
+import CheckBoxOutlineBlankIcon from '@material-ui/icons/CheckBoxOutlineBlank';
+import CheckBoxIcon from '@material-ui/icons/CheckBox';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+
 
 
 const GREY = "#B6B6B6";
@@ -26,7 +32,10 @@ class UserList extends Component {
             width: window.innerWidth,
             height: window.innerHeight,
             search: '',
+            seen: false,
+            reply: false,
             data: null,
+            loading: true,
         }
     }
     componentDidMount = async () => {
@@ -38,6 +47,7 @@ class UserList extends Component {
         })
         this.setState({
             data: this.props.data,
+            loading: this.props.loading
         })
     }
     componentDidUpdate(prevProps, prevState) {
@@ -45,6 +55,16 @@ class UserList extends Component {
             this.setState({
                 data: this.props.data,
             })
+        }
+        if (prevProps.loading != this.props.loading) {
+            this.setState({
+                loading: this.props.loading
+            })
+        }
+        if (this.state.search != prevState.search
+            || this.state.reply != prevState.reply
+            || this.state.seen != prevState.seen) {
+            this.Filter();
         }
     }
     onChange = async (event) => {
@@ -54,6 +74,54 @@ class UserList extends Component {
             [name]: value
         });
         // console.log(this.state)
+    }
+    searchByName(keyword, str) {
+        let arr = []; //Lưu các từ được tách ra từ keyword
+        let index = []; //lưu vị trí dấu cách
+        let d = 0;
+
+        keyword = keyword.trim(); //Xóa các dấu cách thừa ở đầu hoặc ở cuối của keyword
+        for (let i = 0; i < keyword.length; i++) {
+            if (keyword[i] === " ") {
+                index.push(i);
+            }
+        }
+
+        if (index.length === 0) {
+            arr.push(keyword);
+        } else {
+            for (let i = 0; i < index.length; i++) {  //đưa từng từ vào arr[]
+                if (i === 0) {
+                    arr.push(keyword.slice(0, index[i]));
+                }
+                if (i != (index.length - 1) && i != 0) {
+                    arr.push(keyword.slice(index[i - 1] + 1, index[i]));
+                }
+                if (i === index.length - 1) {
+                    arr.push(keyword.slice(index[i - 1] + 1, index[i]));
+                    arr.push(keyword.slice(index[i] + 1, keyword.length));
+                }
+            }
+        }
+        for (var x of arr) {
+            if (str.indexOf(x) !== -1) d++;
+        }
+        if (d === arr.length) return true;
+        else return false;
+    }
+    Filter = () => {
+        var items = this.props.data;
+        const { search, reply, seen } = this.state;
+        items = items.filter(item => this.searchByName(search.toLowerCase(), item.user.Name.toLowerCase()) == true)
+        if (reply == true) {
+            items = items.filter(item => item.lastmessage.isMe == true)
+        }
+        if (seen == true) {
+            items = items.filter(item => item.lastmessage.isMe == true && item.lastmessage.Seen == false)
+        }
+        this.setState({
+            data: items
+        })
     }
     convertDay(time) {
         let d = new Date(time);
@@ -72,7 +140,7 @@ class UserList extends Component {
     }
     render() {
         const { classes } = this.props;
-        const { data } = this.state;
+        const { data, height, loading, seen, reply, width } = this.state;
         return (
             <Grid container item
                 className={classes.well}
@@ -82,12 +150,13 @@ class UserList extends Component {
                     width: '25%',
                 }}>
                 <Grid container item
-                    style={{ width: '95%', height: '12%' }}
-                    direction={'row'}>
+                    alignItems='flex-start' justify='center'
+                    style={{ width: '95%', height: '20%' }} >
                     <TextField
                         variant="outlined"
-                        margin="normal"
                         name="search"
+                        margin='normal'
+                        disabled={loading}
                         fullWidth
                         InputProps={{
                             startAdornment: (
@@ -96,52 +165,94 @@ class UserList extends Component {
                                 </InputAdornment>
                             ),
                         }}
-                        label="Nhập tên khách hàng cần tìm"
+                        label="Tên khách hàng"
+                        placeholder="Nhập tên khách hàng cần tìm..."
                         onChange={this.onChange}
                         value={this.state.search}
                     />
+                    <Grid container item
+                        direction='row' justify='space-around'>
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    disabled={reply}
+                                    checked={seen}
+                                    onChange={this.onChange}
+                                    name="seen"
+                                    color="primary"
+                                />
+                            }
+                            label="Chưa xem"
+                        />
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    disabled={seen}
+                                    checked={reply}
+                                    onChange={this.onChange}
+                                    name="reply"
+                                    color="primary"
+                                />
+                            }
+                            label="Chưa trả lời"
+                        />
+                    </Grid>
                 </Grid>
-                <MenuList
-                    style={{
-                        height: '88%', width: '100%',
-                        justifyContent: 'flex-start', borderTopColor: 'black', borderTop: 1
-                    }}>
-                    {data != null
-                        ? data.map((item) =>
-                            <MenuItem key={item.key}
-                                onClick={() => { this.props.onClick(item.key) }}
-                                style={{ width: '100%' }}>
-                                <ListItemIcon>
-                                    <img
-                                        src={item.user.Avatar != '' ? item.user.Avatar : avatar}
-                                        style={{ width: 55, borderRadius: 55, height: 55 }}
-                                    />
-                                </ListItemIcon>
-                                <Grid item
-                                    style={{ width: '65%', paddingInline: 10 }}>
-                                    <Typography variant="subtitle1" gutterBottom>
-                                        {item.user.Name}
-                                    </Typography>
-                                    <Typography variant="body2" gutterBottom>
-                                        {item.lastmessage.Message}
-                                    </Typography>
-                                </Grid>
-                                <Grid container item
-                                    justify={'flex-end'}
-                                    style={{ width: '20%' }}>
-                                    <Typography variant="body2" gutterBottom>
-                                        {this.convertDay(item.lastmessage.Time)}
-                                    </Typography>
-                                    <Typography variant="body2" gutterBottom>
-                                        {this.convertTime(item.lastmessage.Time)}
-                                    </Typography>
-                                </Grid>
-                            </MenuItem>
-                        )
-                        : null
-                    }
-                    
-                </MenuList>
+                {loading == false
+                    ? <MenuList
+                        disablePadding={true}
+                        style={{
+                            width: '100%', maxHeight: height * 0.6,
+                            height: height * 0.6,
+                            justifyContent: 'flex-start',
+                            position: 'relative',
+                            overflow: 'auto'
+                        }}>
+                        {data.map((item) =>
+                            <Grid key={item.key}>
+                                <MenuItem 
+                                    onClick={() => { this.props.onClick(item.key) }}
+                                    style={{ width: '100%' }}>
+                                    <ListItemIcon>
+                                        <img
+                                            src={item.user.Avatar != '' ? item.user.Avatar : avatar}
+                                            style={{ width: 55, borderRadius: 55, height: 55 }}
+                                        />
+                                    </ListItemIcon>
+                                    <Grid item
+                                        style={{ width: width * 0.15, paddingInline: 10, maxWidth: width * 0.15 }}>
+                                        <Typography variant="subtitle1" gutterBottom
+                                            style={item.lastmessage.isMe == true && item.lastmessage.Seen == false
+                                                ? { fontWeight: 'bold' } : null}>
+                                            {item.user.Name}
+                                        </Typography>
+                                        <Typography variant="body2" gutterBottom
+                                            style={item.lastmessage.isMe == true && item.lastmessage.Seen == false
+                                                ? { fontWeight: 'bold',width: '100%' } : null}>
+                                            {item.lastmessage.isMe == false ? 'Bạn: ' : ''} {item.lastmessage.Message}
+                                        </Typography>
+                                    </Grid>
+                                    <Grid container item
+                                        justify={'flex-end'}
+                                        style={{ width: '20%' }}>
+                                        <Typography variant="body2" gutterBottom
+                                            style={item.lastmessage.isMe == true && item.lastmessage.Seen == false
+                                                ? { fontWeight: 'bold' } : null}>
+                                            {this.convertDay(item.lastmessage.Time)}
+                                        </Typography>
+                                        <Typography variant="body2" gutterBottom
+                                            style={item.lastmessage.isMe == true && item.lastmessage.Seen == false
+                                                ? { fontWeight: 'bold' } : null}>
+                                            {this.convertTime(item.lastmessage.Time)}
+                                        </Typography>
+                                    </Grid>
+                                </MenuItem>
+                            </Grid>
+                        )}
+                    </MenuList>
+                    : <CircularProgress />
+                }
+
             </Grid>
         );
     }
