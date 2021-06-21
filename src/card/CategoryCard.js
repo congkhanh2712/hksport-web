@@ -21,6 +21,7 @@ export default class CategoryCard extends Component {
     componentDidMount() {
         instance.get('/products/category/' + this.props.category.key)
             .then((response) => {
+                console.log(response.data)
                 this.setState({
                     fbProducts: response.data,
                 })
@@ -45,28 +46,32 @@ export default class CategoryCard extends Component {
             slidesToShow: 5,
             slidesToScroll: 4
         };
-        if (fbProducts.length < 10) {
+        if (fbProducts.length <= 0) {
             return (null);
         } else {
             return (
                 <div
                     className={classes.well}
-                    style={{ backgroundColor: "white", margin: 200, marginTop: 20, marginBottom: 0, borderRadius: 10, shadow: 10 }}
+                    style={{
+                        backgroundColor: "white", margin: 200, marginTop: 20,
+                        marginBottom: 0, borderRadius: 10, shadow: 10,
+                    }}
                 >
                     <div className="clearfix">
                         <Typography variant="h6" gutterBottom style={{ marginLeft: 15 }} className="float-left">
                             {category.Name}
                         </Typography>
-                        {fbType.map((x) => {
+                        {fbType.map((x, index) => {
                             return <Link
-                                onClick={() => {
-                                    this.props.searchProduct(x.name);
+                                key={index}
+                                onClick={() => {                                 
+                                    this.props.searchProduct(x.Name);
                                     this.props.keyProductType(x.key);
                                     localStorage.setItem('keyProductType', JSON.stringify({
                                         key: x.key,
                                     }));
                                     localStorage.setItem('nameProductType', JSON.stringify({
-                                        name: x.name,
+                                        name: x.Name,
                                     }));
                                     localStorage.setItem('from', JSON.stringify({
                                         from: "home",
@@ -81,7 +86,7 @@ export default class CategoryCard extends Component {
                     </div>
                     <Divider style={{ marginTop: -5, marginBottom: 10 }}></Divider>
                     <Slider {...settings}>
-                        {fbProducts.slice(0, 10).map((product) =>
+                        {fbProducts.slice(0,10).map((product) =>
                             <HomeProduct
                                 key={product.key}
                                 product={product} classes={classes} />

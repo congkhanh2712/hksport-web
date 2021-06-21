@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import './App.css';
 import Navbar from './component/Navbar'
-import Button from '@material-ui/core/Button';
+import Grid from '@material-ui/core/Grid';
 import {
     BrowserRouter as Router,
     Switch,
@@ -30,6 +30,7 @@ import DetailOrder from "./component/account/ManageOrder/DetailOrder/DetailOrder
 import RatingOrder from "./component/account/ManageOrder/RatingOrder/RatingOrder"
 import { FooterContainer } from './container/footer'
 import ShipAddress from './component/account/ShipAddress';
+import Cart from './component/account/Cart/Cart';
 import ManageOrder from './component/account/ManageOrder/ManageOrder'
 import SearchProduct from './component/pages/SearchProduct/SearchProduct'
 import instance from './AxiosConfig';
@@ -101,6 +102,12 @@ export default class App extends Component {
             })
         })
     }
+    componentDidMount() {
+        if (localStorage && localStorage.getItem('user')) {
+            var user = JSON.parse(localStorage.getItem("user"));
+            this.isLogin(user);
+        };
+    }
     isLogout = () => {
         this.setState({
             isLogin: false,
@@ -152,6 +159,8 @@ export default class App extends Component {
         if (search !== "") {
             search = this.removeVietnameseTones(search);
         }
+        const { role } = this.state;
+        console.log(role)
         return (
             <Router>
                 <Navbar
@@ -161,7 +170,33 @@ export default class App extends Component {
                     searchProduct={this.searchProduct}
                 />
                 <Switch>
-
+                    {role == 'admin'
+                        ? <Route path='/admin' exact>
+                            {({ location }) => <HomeAd isLogin={this.isLogin} location={location} />}
+                        </Route>
+                        : null
+                    }
+                    {role == 'admin'
+                        ? <Route path="/admin/detail-order/:slug" exact>
+                            {({ match }) => <DetailOrder isLogin={this.isLogin} match={match} />}
+                        </Route>
+                        : null
+                    }
+                    {role == 'admin'
+                        ? <Route path='/admin/update/:slug'>
+                            {({ match }) => <DetailUpdate isLogin={this.isLogin} match={match} />}
+                        </Route>
+                        : null
+                    }
+                    {role == 'admin'
+                        ? <Route path='/admin/add-product'>
+                            {({ match }) =>
+                                <AddProduct isLogin={this.isLogin}
+                                    match={match}
+                                />}
+                        </Route>
+                        : null
+                    }
                     <Route path='/' exact>
                         <Home isLogin={this.isLogin} searchProduct={this.searchProduct} keyProductType={this.keyProductType} />
                     </Route>
@@ -178,55 +213,79 @@ export default class App extends Component {
                     </Route>
                     <Route path='/marketing' component={Marketing} />
                     <Route path='/consulting' component={Consulting} />
-                    <Route path='/admin' exact>
-                        {({ location }) => <HomeAd isLogin={this.isLogin} location={location} />}
-                    </Route>
                     <Route path="/reset-password" component={ForgetPassword} />
-                    <Route path="/account" exact>
-                        <AccountManagement isLogin={this.isLogin} />
-                    </Route>
-                    <Route path="/account/change-password" >
-                        <ChangePassword isLogin={this.isLogin} />
-                    </Route>
-                    <Route path="/account/change-shipaddress" >
-                        <ShipAddress isLogin={this.isLogin} />
-                    </Route>
-                    <Route path="/account/seen-product" >
-                        <SeenProduct isLogin={this.isLogin} />
-                    </Route>
-                    <Route path="/account/liked-product" >
-                        <LikedProduct isLogin={this.isLogin} />
-                    </Route>
-                    <Route path="/account/useable-voucher" exact>
-                        <UseableVoucher isLogin={this.isLogin} />
-                    </Route>
+                    {role == 'user'
+                        ? <Route path="/account" exact>
+                            <AccountManagement isLogin={this.isLogin} />
+                        </Route>
+                        : null
+                    }
+                    {role == 'user'
+                        ? <Route path="/account/change-password" >
+                            <ChangePassword isLogin={this.isLogin} />
+                        </Route>
+                        : null
+                    }
+                    {role == 'user'
+                        ? <Route path="/account/change-shipaddress" >
+                            <ShipAddress isLogin={this.isLogin} />
+                        </Route>
+                        : null
+                    }
+                    {role == 'user'
+                        ? <Route path="/account/seen-product" >
+                            <SeenProduct isLogin={this.isLogin} />
+                        </Route>
+                        : null
+                    }
+                    {role == 'user'
+                        ? <Route path="/account/liked-product" >
+                            <LikedProduct isLogin={this.isLogin} />
+                        </Route>
+                        : null
+                    }
+                    {role == 'user'
+                        ? <Route path="/account/useable-voucher" exact>
+                            <UseableVoucher isLogin={this.isLogin} />
+                        </Route>
+                        : null
+                    }
+                    {role == 'user'
+                        ? <Route path="/account/manage-order/:slug" exact>
+                            {({ match }) => <ManageOrder isLogin={this.isLogin} match={match} />}
+                        </Route>
+                        : null
+                    }
+                    {role == 'user'
+                        ? <Route path="/account/manage-order/detail-order/:slug" exact>
+                            {({ match }) => <DetailOrder isLogin={this.isLogin} match={match} />}
+                        </Route>
+                        : null
+                    }
+                    {role == 'user'
+                        ? <Route path="/account/manage-order/rating-order/:slug" exact>
+                            {({ match }) => <RatingOrder isLogin={this.isLogin} match={match} />}
+                        </Route>
+                        : null
+                    }
+                    {role == 'user'
+                        ? <Route path='/account/useable-voucher/:slug'>
+                            {({ match }) => <DetailVoucher isLogin={this.isLogin} match={match} />}
+                        </Route>
+                        : null
+                    }
+                    {role == 'user'
+                        ? <Route path='/cart'>
+                            {({ match }) => <Cart isLogin={this.isLogin} match={match} />}
+                        </Route>
+                        : null
+                    }
                     <Route path="/search-product/:slug" exact>
                         {({ match }) => <SearchProduct
                             keyProductType={this.state.key}
                             props={this.state.search}
                             isLogin={this.isLogin}
                             match={match} />}
-                    </Route>
-                    <Route path="/account/manage-order/:slug" exact>
-                        {({ match }) => <ManageOrder isLogin={this.isLogin} match={match} />}
-                    </Route>
-                    <Route path="/account/manage-order/detail-order/:slug" exact>
-                        {({ match }) => <DetailOrder isLogin={this.isLogin} match={match} />}
-                    </Route>
-                    <Route path="/account/manage-order/rating-order/:slug" exact>
-                        {({ match }) => <RatingOrder isLogin={this.isLogin} match={match} />}
-                    </Route>
-                    <Route path="/admin/detail-order/:slug" exact>
-                        {({ match }) => <DetailOrder isLogin={this.isLogin} match={match} />}
-                    </Route>
-                    <Route path='/admin/update/:slug'>
-                        {({ match }) => <DetailUpdate isLogin={this.isLogin} match={match} />}
-                    </Route>
-                    <Route path='/account/useable-voucher/:slug'>
-                        {({ match }) => <DetailVoucher isLogin={this.isLogin} match={match} />}
-                    </Route>
-                    <Route path='/admin/addproduct'>
-                        <AddProduct />
                     </Route>
                 </Switch>
                 {this.state.role === "admin" ? "" : <FooterContainer />}

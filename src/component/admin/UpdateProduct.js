@@ -11,6 +11,14 @@ import NativeSelect from '@material-ui/core/NativeSelect';
 import CardUpdate from './CardUpdate';
 import Pagination from '@material-ui/lab/Pagination';
 import instance from '../../AxiosConfig';
+import AddBoxIcon from '@material-ui/icons/AddBox';
+import Button from '@material-ui/core/Button';
+import InputAdornment from '@material-ui/core/InputAdornment';
+import CircularProgress from '@material-ui/core/CircularProgress';
+import {
+    NavLink
+} from "react-router-dom";
+
 
 const styles = theme => ({
     root: {
@@ -47,7 +55,8 @@ class UpdateProduct extends Component {
             category: "",
             competition: "",
             brand: "",
-            productType: ""
+            productType: "",
+            loading: true,
         }
     }
 
@@ -99,7 +108,6 @@ class UpdateProduct extends Component {
         instance.get(url, {
             params: { page: 0 }
         }).then((response) => {
-            console.log(response)
             this.setState({
                 fbProductType: response.data.list,
             })
@@ -121,7 +129,8 @@ class UpdateProduct extends Component {
             });
             this.setState({
                 fbProducts: temp,
-                products: temp
+                products: temp,
+                loading: false,
             })
         })
     }
@@ -171,7 +180,7 @@ class UpdateProduct extends Component {
 
     render() {
         var { searchProduct, fbProducts, fbCategory, fbCompetition, fbBrand, fbProductType, page, products, count,
-            category, competition, brand, productType } = this.state;
+            category, competition, brand, productType, loading } = this.state;
         //tìm kiếm
         if (searchProduct !== "") {
             products = fbProducts.filter((product) => {
@@ -247,8 +256,8 @@ class UpdateProduct extends Component {
         }
 
         //
-        if (products.length >= 6) {
-            count = products.length / 6;
+        if (products.length >= 12) {
+            count = products.length / 12;
             if (count % 1 > 0) {
                 count = count - count % 1 + 1;
             }
@@ -257,7 +266,7 @@ class UpdateProduct extends Component {
         }
         if (page !== 0) {
             var temp = [];
-            for (var i = (page - 1) * 6; i <= (page - 1) * 6 + 5; i++) {
+            for (var i = (page - 1) * 12; i <= (page - 1) * 12 + 11; i++) {
                 if (products[i]) {
                     temp.push(products[i])
                 }
@@ -269,27 +278,32 @@ class UpdateProduct extends Component {
         return (
             <div className={classes.root}>
                 <form className={classes.form} noValidate onSubmit={this.onSubmit}>
-                    <Grid container spacing={3}>
-                        <Grid item xs={6}>
+                    <Grid container spacing={2}>
+                        <Grid item xs={3}>
                             <TextField
                                 size="small"
-                                label="Tìm kiếm..."
+                                label="Tìm kiếm"
+                                disabled={loading}
+                                placeholder="Nhập tên sản phẩm..."
                                 variant="outlined"
-                                style={{ width: "80%" }}
+                                fullWidth
                                 name="searchProduct"
                                 value={this.state.searchProduct}
                                 onChange={this.onChange}
-                            />
-                            <IconButton
-                                aria-label="delete"
-                                color="green"
-                                style={{ marginLeft: -50, marginTop: -2.5 }}
-                                type="submit"
-                            >
-                                <SearchIcon />
-                            </IconButton>
+                                InputProps={{
+                                    endAdornment:
+                                        <InputAdornment position="end">
+                                            <IconButton
+                                                aria-label="delete"
+                                                color="green"
+                                                type="submit"
+                                            >
+                                                <SearchIcon />
+                                            </IconButton>
+                                        </InputAdornment>
+                                }} />
                         </Grid>
-                        <Grid item xs={6}>
+                        <Grid item xs={7}>
                             <FormControl
                                 className={classes.formControl}
                                 style={{ marginTop: -10, marginRight: 5 }}
@@ -309,28 +323,25 @@ class UpdateProduct extends Component {
                                     })}
                                 </NativeSelect>
                             </FormControl>
-                            {category === "-MM4mE5BrdZFlBmyuUL4" ?
-                                <FormControl
-                                    className={classes.formControl}
-                                    style={{ marginTop: -10, marginRight: 5 }}
+                            <FormControl
+                                className={classes.formControl}
+                                style={{ marginTop: -10, marginRight: 5 }}
+                            >
+                                <InputLabel >Giải đấu</InputLabel>
+                                <NativeSelect
+                                    value={competition}
+                                    defaultValue={competition}
+                                    inputProps={{
+                                        name: 'competition',
+                                    }}
+                                    onChange={this.onChange}
                                 >
-                                    <InputLabel >Giải đấu</InputLabel>
-                                    <NativeSelect
-                                        value={competition}
-                                        defaultValue={competition}
-                                        inputProps={{
-                                            name: 'competition',
-                                        }}
-                                        onChange={this.onChange}
-                                    >
-                                        <option aria-label="None" value="" />
-                                        {fbCompetition.map((x, index) => {
-                                            return <option key={index} value={x.key}>{x.Name}</option>
-                                        })}
-                                    </NativeSelect>
-                                </FormControl> : ""
-                            }
-
+                                    <option aria-label="None" value="" />
+                                    {fbCompetition.map((x, index) => {
+                                        return <option key={index} value={x.key}>{x.Name}</option>
+                                    })}
+                                </NativeSelect>
+                            </FormControl>
                             <FormControl
                                 className={classes.formControl}
                                 style={{ marginTop: -10, marginRight: 5 }}
@@ -370,30 +381,35 @@ class UpdateProduct extends Component {
                                 </NativeSelect>
                             </FormControl>
                         </Grid>
+                        <Grid item xs={2}>
+                            <NavLink to={`/admin/add-product`}>
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    startIcon={<AddBoxIcon />}
+                                >
+                                    Thêm sản phẩm
+                                </Button>
+                            </NavLink>
+                        </Grid>
                     </Grid>
                 </form>
                 <hr />
 
-                <Grid container spacing={3} style={{ marginTop: 5, }}>
-                    {/* <Grid item xs={6} sm={3}>
-                        <CardUpdate />
-                    </Grid>
-                    <Grid item xs={6} sm={3}>
-                        <CardUpdate />
-                    </Grid>
-                    <Grid item xs={6} sm={3}>
-                        <CardUpdate />
-                    </Grid>
-                    <Grid item xs={6} sm={3}>
-                        <CardUpdate />
-                    </Grid> */}
-                    {products.map((product, index) => {
-                        return (
-                            <Grid item xs={6} sm={2}>
-                                <CardUpdate data={product} />
-                            </Grid>
-                        )
-                    })}
+                <Grid container spacing={3}
+                    direction='row'
+                    justify={loading == true ? 'center' : 'flex-start'}
+                    style={{ marginTop: 5 }}>
+                    {loading == true
+                        ? <CircularProgress />
+                        : products.map((product) => {
+                            return (
+                                <Grid item xs={6} sm={2} key={product.key}>
+                                    <CardUpdate data={product} />
+                                </Grid>
+                            )
+                        })
+                    }
                 </Grid>
                 <Pagination
                     page={page}

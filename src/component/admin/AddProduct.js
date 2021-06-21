@@ -24,6 +24,11 @@ import DialogActions from '@material-ui/core/DialogActions';
 import Box from '@material-ui/core/Box';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
+import GridList from '@material-ui/core/GridList';
+import GridListTile from '@material-ui/core/GridListTile';
+import GridListTileBar from '@material-ui/core/GridListTileBar';
+import CancelIcon from '@material-ui/icons/Cancel';
+import IconButton from '@material-ui/core/IconButton';
 import instance from '../../AxiosConfig';
 
 const styles = theme => ({
@@ -57,6 +62,18 @@ const styles = theme => ({
         position: 'fixed',
         bottom: theme.spacing(3),
         right: theme.spacing(5),
+    },
+    gridList: {
+        flexWrap: 'nowrap',
+        // Promote the list into his own layer on Chrome. This cost memory but helps keeping high FPS.
+        transform: 'translateZ(0)',
+    },
+    title: {
+        color: theme.palette.primary.light,
+    },
+    titleBar: {
+        background:
+            'linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 70%, rgba(0,0,0,0) 100%)',
     },
 });
 
@@ -102,6 +119,10 @@ class AddProduct extends Component {
     }
 
     componentDidMount = async () => {
+        if (localStorage && localStorage.getItem('user')) {
+            var user = JSON.parse(localStorage.getItem("user"));
+            this.props.isLogin(user);
+        };
         this.getCategories();
         this.getCompetitions();
         this.getBrands();
@@ -301,7 +322,6 @@ class AddProduct extends Component {
         instance.get(url, {
             params: { page: 0 }
         }).then((response) => {
-            console.log(response)
             this.setState({
                 fbType: response.data.list,
             })
@@ -321,6 +341,7 @@ class AddProduct extends Component {
     mainImageSelect = () => {
         var images = this.state.images;
         var image = document.getElementById("mainImg").files;
+        images = images.filter(e => e.file.name != image[0].name && e.file.size != image[0].size)
         images.shift();
         images.unshift({
             name: Date.now(),
@@ -334,16 +355,12 @@ class AddProduct extends Component {
     otherImageSelect = () => {
         var images = this.state.images;
         var image = document.getElementById("otherImg").files;
-        for (var i = 0; i < image.length; i++) {
-            images.forEach((e, index) => {
-                if (e.file.name === image[i].name && e.file.size == image[i].size) {
-                    images.splice(index, 1);
-                }
-            })
+        for (let i of image) {
+            images = images.filter(e => e.file.name != i.name && e.file.size != i.size)
             images.push({
                 name: Date.now(),
-                url: URL.createObjectURL(image[i]),
-                file: image[i]
+                url: URL.createObjectURL(i),
+                file: i
             })
         }
         this.setState({
@@ -375,6 +392,11 @@ class AddProduct extends Component {
         })
         this.setState({ size: items });
     }
+    deleteImages = (i) => {
+        var images = this.state.images;
+        images = images.filter(e => e != i)
+        this.setState({ images })
+    }
     render() {
         const { fbCategory, fbType, fbCompetition, fbBrand, width, images, size } = this.state;
         const { classes } = this.props;
@@ -400,7 +422,7 @@ class AddProduct extends Component {
                                     onChange={this.mainImageSelect}
                                 />
                                 <Button
-                                    style={{ marginBlock: 25, width: width / 4, height: width / 4, borderRadius: 25, backgroundColor: '#EEEEEE' }}
+                                    style={{ marginBlock: 25, width: width / 4, height: width / 4, borderRadius: 15, backgroundColor: '#EEEEEE' }}
                                     onClick={() => { this.onClick("mainImg") }}
                                 >
                                     <img
@@ -418,24 +440,34 @@ class AddProduct extends Component {
                                     hidden
                                     onChange={this.otherImageSelect}
                                 />
-                                {images.map((i, index) => {
-                                    if (index != 0) {
-                                        return <img
-                                            key={index}
-                                            style={{
-                                                width: width / 15, height: width / 15,
-                                                borderRadius: 5, backgroundColor: '#EEEEEE',
-                                                marginBlock: 5, marginInline: 10
-                                            }}
-                                            src={i.url}
-                                        />
-                                    }
-                                })}
+                                <GridList
+                                    style={{ width: '100%' }}
+                                    className={classes.gridList} cols={2.5}>
+                                    {images.map((i, index) => {
+                                        if (index != 0) {
+                                            return <GridListTile key={i}>
+                                                <img src={i.url} alt="Hình ảnh" />
+                                                <GridListTileBar
+                                                    title={i.file.name}
+                                                    classes={{
+                                                        root: classes.titleBar,
+                                                        title: classes.title,
+                                                    }}
+                                                    actionIcon={
+                                                        <IconButton onClick={() => { this.deleteImages(i) }}>
+                                                            <CancelIcon className={classes.title} />
+                                                        </IconButton>
+                                                    }
+                                                />
+                                            </GridListTile>
+                                        }
+                                    })}
+                                </GridList>
                                 <Button
                                     style={{
                                         width: width / 15, height: width / 15,
-                                        borderRadius: 5, marginBottom: 10, backgroundColor: '#EEEEEE',
-                                        marginBlock: 5, marginInline: 10
+                                        borderRadius: 5, backgroundColor: '#EEEEEE',
+                                        marginBlock: 15
                                     }}
                                     onClick={() => { this.onClick("otherImg") }}>
                                     <img
@@ -762,7 +794,6 @@ class AddProduct extends Component {
                                         </NativeSelect>
                                     </FormControl>
                                     <TextField
-
                                         margin="dense"
                                         label="Name"
                                         fullWidth
@@ -827,7 +858,7 @@ class AddProduct extends Component {
                             },
                         },
                     }} />
-            </Container>
+            </Container >
         )
     }
 }

@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
+
 import toast, { Toaster } from 'react-hot-toast';
+
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
@@ -7,9 +9,10 @@ import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import Typography from '@material-ui/core/Typography';
 import Box from '@material-ui/core/Box';
-import OrderList from "./OrderList"
-import instance from '../../../AxiosConfig';
-
+import CancelOrderAd from "./ManageOrderAd/CancelOrderAd"
+import ProcessingOrderAd from "./ManageOrderAd/ProcessingOrderAd"
+import ShippedOrderAd from "./ManageOrderAd/ShippedOrderAd"
+import ShippingOrderAd from "./ManageOrderAd/ShippingOrderAd"
 function TabPanel(props) {
     const { children, value, index, ...other } = props;
 
@@ -55,71 +58,35 @@ class HomeAd extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            order: [],
-            value: 0
+            redirect: false,
+            value: 0,
+            width: window.innerWidth,
+            height: window.innerHeight,
         }
     }
 
     handleChange = (event, newValue) => {
         this.setState({
             value: newValue,
-            order: [],
-        }, () => {
-            this.getBillList();
         })
     }
 
-    componentDidMount = async () => {
-        if (localStorage && localStorage.getItem('user')) {
-            var user = JSON.parse(localStorage.getItem("user"));
-            this.props.isLogin(user);
-        };
-        var slug = this.props.match.params.slug;
-        await this.setState({
-            value: slug * 1
-        })
-        this.getBillList();
-    }
-    getBillList = () => {
-        var status = '';
-        switch (this.state.value) {
-            case 0:
-                status = 'Đang xử lý';
-                break;
-            case 1:
-                status = "Đang giao";
-                break;
-            case 2:
-                status = "Đã giao";
-                break;
-            case 3:
-                status = "Đã hủy";
-                break
-        }
-        instance.get('/order/list/user', {
-            params: {
-                page: 0,
-                status: status,
-                prevpage: 0,
-            }
-        }).then(res => {
-            if (res.status == 200) {
-                console.log(res.data.list)
-                this.setState({
-                    order: res.data.list,
-                })
-            }
+    componentDidMount = () => {
+        window.addEventListener('resize', () => {
+            this.setState({
+                width: window.innerWidth,
+                height: window.innerHeight,
+            });
         })
     }
     render() {
-        //var slug = this.props.match.params.slug;
         const { classes } = this.props;
         return (
             <>
-                <div className={classes.root}>
-                    <AppBar position="static" color="default">
+                <div className={classes.root} style={{alignItems:'center'}}>
+                    <AppBar position="static" color="default" style={{ alignItems: 'center' }}>
                         <Tabs
-                            style={{ marginLeft: "28%" }}
+                            style={{ marginInline: '5%' }}
                             value={this.state.value}
                             onChange={this.handleChange}
                             indicatorColor="primary"
@@ -135,18 +102,17 @@ class HomeAd extends Component {
                         </Tabs>
                     </AppBar>
                     <TabPanel value={this.state.value} index={0}>
-                        <OrderList order={this.state.order} />
+                        <ProcessingOrderAd />
                     </TabPanel>
                     <TabPanel value={this.state.value} index={1}>
-                        <OrderList order={this.state.order} />
+                        <ShippingOrderAd />
                     </TabPanel>
                     <TabPanel value={this.state.value} index={2}>
-                        <OrderList order={this.state.order} />
+                        <ShippedOrderAd />
                     </TabPanel>
                     <TabPanel value={this.state.value} index={3}>
-                        <OrderList order={this.state.order} />
+                        <CancelOrderAd />
                     </TabPanel>
-
                 </div>
                 <Toaster
                     position="top-right"
@@ -161,8 +127,13 @@ class HomeAd extends Component {
                             zIndex: 1,
                         },
                         duration: 5000,
+                        // Default options for specific types
                         success: {
                             duration: 3000,
+                            // theme: {
+                            //     primary: 'yellow',
+                            //     secondary: 'yellow',
+                            // },
                             style: {
                                 margin: '100px',
                                 background: '#00e676',

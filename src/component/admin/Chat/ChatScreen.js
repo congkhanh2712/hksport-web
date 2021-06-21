@@ -17,7 +17,7 @@ import instance from '../../../AxiosConfig';
 import avatar from '../../../images/ic_avatar.png';
 
 
-const GREY = "#B6B6B6";
+const GREY = "#D4D4D4";
 const styles = ({
     well: {
         boxShadow: `0px 0px 5px 1px ${GREY}`,
@@ -65,7 +65,6 @@ class ChatScreen extends Component {
             }, () => {
                 fbApp.database().ref('TblMessage').child(this.props.user.uid)
                     .on('value', val => {
-                        console.log(val.numChildren() + ' - ' + this.state.mesLength);
                         if (this.state.mesLength != -1
                             && val.numChildren() > this.state.mesLength) {
                             this.setState({

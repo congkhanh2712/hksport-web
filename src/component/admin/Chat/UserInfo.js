@@ -26,7 +26,7 @@ import instance from '../../../AxiosConfig';
 import avatar from '../../../images/ic_avatar.png';
 
 
-const GREY = "#B6B6B6";
+const GREY = "#D4D4D4";
 const styles = ({
     well: {
         boxShadow: `0px 0px 5px 1px ${GREY}`,

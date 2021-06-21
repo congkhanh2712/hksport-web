@@ -1,11 +1,9 @@
 import React, { Component } from 'react';
-import fbApp from '../../../Firebase'
 import { createMuiTheme, withStyles, makeStyles, ThemeProvider } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import { green } from '@material-ui/core/colors';
 import PropTypes from 'prop-types';
 import Grid from '@material-ui/core/Grid';
-import toast, { Toaster } from 'react-hot-toast';
 import SeenCard from "./SeenCard"
 import Typography from '@material-ui/core/Typography';
 import instance from '../../../AxiosConfig';

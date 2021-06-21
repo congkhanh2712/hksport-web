@@ -12,13 +12,12 @@ import InputAdornment from '@material-ui/core/InputAdornment';
 import SearchIcon from '@material-ui/icons/Search';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Checkbox from '@material-ui/core/Checkbox';
-import CheckBoxOutlineBlankIcon from '@material-ui/icons/CheckBoxOutlineBlank';
-import CheckBoxIcon from '@material-ui/icons/CheckBox';
+import ThumbUpIcon from '@material-ui/icons/ThumbUp';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 
 
 
-const GREY = "#B6B6B6";
+const GREY = "#D4D4D4";
 const styles = ({
     well: {
         boxShadow: `0px 0px 5px 1px ${GREY}`,
@@ -210,7 +209,7 @@ class UserList extends Component {
                         }}>
                         {data.map((item) =>
                             <Grid key={item.key}>
-                                <MenuItem 
+                                <MenuItem
                                     onClick={() => { this.props.onClick(item.key) }}
                                     style={{ width: '100%' }}>
                                     <ListItemIcon>
@@ -228,8 +227,11 @@ class UserList extends Component {
                                         </Typography>
                                         <Typography variant="body2" gutterBottom
                                             style={item.lastmessage.isMe == true && item.lastmessage.Seen == false
-                                                ? { fontWeight: 'bold',width: '100%' } : null}>
-                                            {item.lastmessage.isMe == false ? 'Bạn: ' : ''} {item.lastmessage.Message}
+                                                ? { fontWeight: 'bold', width: '100%' } : null}>
+                                            {item.lastmessage.isMe == false ? 'Bạn: ' : ''}
+                                            {item.lastmessage.Message == ''
+                                                ? <ThumbUpIcon color='action' />
+                                                : item.lastmessage.Message}
                                         </Typography>
                                     </Grid>
                                     <Grid container item

@@ -3,13 +3,15 @@ import React from 'react';
 import Button from './Button';
 import './Navbar.css'
 import Dropdown from './Dropdown';
-import AddShoppingCartRoundedIcon from '@material-ui/icons/AddShoppingCartRounded';
+import ShoppingCartIcon from '@material-ui/icons/ShoppingCart';
 import Badge from '@material-ui/core/Badge';
 import TextField from '@material-ui/core/TextField';
 import SearchIcon from '@material-ui/icons/Search';
 import IconButton from '@material-ui/core/IconButton';
 import Grid from '@material-ui/core/Grid';
-import { Redirect,Link } from 'react-router-dom';
+import { Redirect, Link } from 'react-router-dom';
+import fbApp from '../Firebase';
+import instance from "../AxiosConfig";
 
 export default class Navbar extends Component {
     constructor(props) {
@@ -18,7 +20,28 @@ export default class Navbar extends Component {
             click: false,
             dropdown: false,
             search: "",
-            redirectSearch: false
+            redirectSearch: false,
+            cartLength: 0,
+        }
+    }
+    componentDidMount = () => {
+        var user = null;
+        if (localStorage && localStorage.getItem('user')) {
+            user = JSON.parse(localStorage.getItem("user"));
+        };
+        if (user != null) {
+            instance.defaults.headers['x-access-token'] = user.token;
+            instance.get('/auth/').then(res => {
+                console.log(res.data)
+                if (res.status == 200) {
+                    fbApp.database().ref('TblCart').child(res.data.uid)
+                        .on('value', snap => {
+                            this.setState({
+                                cartLength: snap.numChildren() - 1
+                            })
+                        })
+                }
+            }).catch(err => console.log(err))
         }
     }
     handleClick = () => {
@@ -64,7 +87,7 @@ export default class Navbar extends Component {
 
     onSubmit = (event) => {
         event.preventDefault();
-        if(this.state.search !== ""){
+        if (this.state.search !== "") {
             this.props.searchProduct(this.state.search)
             localStorage.setItem('search', JSON.stringify({
                 keyword: this.state.search,
@@ -91,15 +114,14 @@ export default class Navbar extends Component {
             <li className="nav-itemh">
                 <Link to="/contact-us" className="nav-links" onClick={this.closeMobileMenu}>
                     Contact Us
-                            </Link>
+                </Link>
             </li>
         </div>;
         var { click, dropdown } = this.state;
-        var home = this.props.isAdmin === "admin" ? "/admin" : "/"
         return (
             <div>
                 <nav className="navbarh">
-                    <Link to={home} className="navbar-logo" style={{ textDecoration: 'none' }}><i class="fas fa-futbol"></i> HKSport</Link>
+                    <Link to={'/'} className="navbar-logo" style={{ textDecoration: 'none' }}><i class="fas fa-futbol"></i> HKSport</Link>
                     <form
                         noValidate
                         style={{ justifyContent: "start", width: "25%", marginLeft: 40, marginTop: 10 }}
@@ -132,37 +154,28 @@ export default class Navbar extends Component {
 
                     <ul className={click ? "nav-menu active" : "nav-menu"}>
 
+                        {this.props.isAdmin === "user" ? <li className="nav-itemh">
+                            <Link to="/account" className="nav-links" onClick={this.closeMobileMenu} style={{ textDecoration: 'none' }}>
+                                Tài khoản
+                            </Link>
+                        </li> : this.props.isAdmin === "admin"
+                            ? <li className="nav-itemh">
+                                <Link to="/admin" className="nav-links" onClick={this.closeMobileMenu} style={{ textDecoration: 'none' }}>
+                                    Trang Quản lý
+                                </Link>
+                            </li>
+                            : <li className="nav-itemh">
+                                <Link to={'/'} className="nav-links" onClick={this.closeMobileMenu} style={{ textDecoration: 'none' }}>
+                                    Home
+                                </Link>
+                            </li>
+                        }
+
                         <li className="nav-itemh">
-                            <Link to={home} className="nav-links" onClick={this.closeMobileMenu} style={{ textDecoration: 'none' }}>
-                                {this.props.isAdmin === "admin" ? "Admin" : "Home"}
+                            <Link to="/contact-us" className="nav-links" onClick={this.closeMobileMenu} style={{ textDecoration: 'none' }}>
+                                Liên hệ
                             </Link>
                         </li>
-                        {this.props.isAdmin === "admin" ? "" :
-                            <li className="nav-itemh"
-                                onMouseEnter={this.onMouseEnter}
-                                onMouseLeave={this.onMouseLeave}
-                            >
-                                <Link to="/services" className="nav-links" onClick={this.closeMobileMenu} style={{ textDecoration: 'none' }}>
-                                    Services <i class="fas fa-caret-down"></i>
-                                </Link>
-                                {dropdown && <Dropdown />}
-                            </li>
-                        }
-
-                        {this.props.isAdmin === "admin" ? "" :
-                            <li className="nav-itemh">
-                                <Link to="/contact-us" className="nav-links" onClick={this.closeMobileMenu} style={{ textDecoration: 'none' }}>
-                                    Liên hệ
-                            </Link>
-                            </li>
-                        }
-
-                        {this.props.isAdmin === "user" ? <li className="nav-itemh">
-                                <Link to="/account" className="nav-links" onClick={this.closeMobileMenu} style={{ textDecoration: 'none' }}>
-                                    Tài khoản
-                                </Link>
-                                </li> : ""
-                        }
 
                         <li className="nav-itemh">
                             <Link to="/sign-in" className="nav-links-mobile" onClick={this.closeMobileMenu} style={{ textDecoration: 'none' }}>
@@ -173,12 +186,18 @@ export default class Navbar extends Component {
                     <Button isLogin={this.props.isLogin}
                         isLogout={this.props.isLogout}
                     />
-
-                    <div style={{ marginLeft: 70 }}>
-                        <Badge badgeContent={4} color="error">
-                            <AddShoppingCartRoundedIcon />
-                        </Badge>
-                    </div>
+                    {this.props.isAdmin === "user"
+                        ? <div style={{ marginLeft: 70 }}>
+                            <Link to="/cart">
+                                <IconButton aria-label="add to shopping cart">
+                                    <Badge badgeContent={this.state.cartLength} color="error">
+                                        <ShoppingCartIcon htmlColor='white' />
+                                    </Badge>
+                                </IconButton>
+                            </Link>
+                        </div>
+                        : null
+                    }
                 </nav>
             </div>
         )

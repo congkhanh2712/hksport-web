@@ -4,6 +4,8 @@ src/component/account/SignIn			-	them ComponentDidmount
 src/component/account/SignUp			-	ComponentDidmount (83-88)
 src/component/admin/AddProduct		
 src/component/admin/HomeAd			-	136 vs 161
+src/component/admin/UpdateProduct	
+src/App.js	
 
 
 
@@ -11,3 +13,12 @@ src/component/admin/HomeAd			-	136 vs 161
 //New
 src/images/add_image.png
 src/component/admin/Chat
+
+//Rename
+src/component/account/ManageOrder/ProcessingOrder	-	OrderList
+
+
+//Delete
+src/component/account/ManageOrder/ShippedOrder
+src/component/account/ManageOrder/ShippingOrder
+src/component/account/ManageOrder/CancelOrder

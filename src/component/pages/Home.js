@@ -9,6 +9,7 @@ import Typography from '@material-ui/core/Typography';
 import Divider from '@material-ui/core/Divider';
 import { withStyles } from '@material-ui/core/styles';
 import PropTypes from 'prop-types';
+import Grid from '@material-ui/core/Grid';
 import CategoryCard from '../../card/CategoryCard';
 import TopProduct from '../../card/TopProduct';
 import instance from '../../AxiosConfig';
@@ -108,11 +109,12 @@ class Home extends Component {
       sl.push(sum);
       return 0
     })
-
     return (
-      <div style={{ backgroundColor: "#f0f0f0" }}>
-        <div style={{ paddingLeft: "25%", paddingRight: "25%" }} >
-          <Carousel style={{ width: "100%" }} className={classes.well}>
+      <div style={{ backgroundColor: "#f0f0f0", paddingBlock: 15 }}>
+        <Grid container
+          justify='space-between'
+          direction='row' style={{ paddingInline: "14%" }}>
+          <Carousel style={{ width: "60%" }} className={classes.well}>
             {fbCompetition.map((x, index) => {
               return <Carousel.Item key={index}>
                 <img
@@ -124,8 +126,19 @@ class Home extends Component {
               </Carousel.Item>
             })}
           </Carousel>
-        </div>
-        {/* cac san pham ban chay */}
+          <Carousel style={{ width: "39%" }} className={classes.well}>
+            {fbCategory.map((x, index) => {
+              return <Carousel.Item key={index}>
+                <img
+                  height="300"
+                  className="d-block w-100"
+                  src={x.Image}
+                  alt={x.Name}
+                />
+              </Carousel.Item>
+            })}
+          </Carousel>
+        </Grid>
         <div
           className={classes.well}
           style={{ backgroundColor: "white", margin: 200, marginTop: 20, marginBottom: 0, borderRadius: 10 }}
@@ -146,6 +159,8 @@ class Home extends Component {
         </div>
         {fbCategory.map((item) =>
           <CategoryCard
+            searchProduct={this.props.searchProduct}
+            keyProductType={this.props.keyProductType}
             key={item.key}
             classes={this.props.classes}
             category={item}

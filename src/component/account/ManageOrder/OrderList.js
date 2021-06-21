@@ -1,21 +1,24 @@
 import React, { Component } from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import PropTypes from 'prop-types';
-import CardOrderAd from './CardOrderAd'
 import { Grid } from '@material-ui/core';
+import CardOrder from './CardOrder'
 import CircularProgress from '@material-ui/core/CircularProgress';
-import instance from '../../../AxiosConfig';
 import FilterNoneIcon from '@material-ui/icons/FilterNone';
 import Typography from '@material-ui/core/Typography';
 
 const GREY = "#9E9E9E";
+
 const styles = theme => ({
     root: {
         flexGrow: 1,
     },
+    well: {
+        boxShadow: `3px 3px 10px 3px ${GREY}`,
+    },
 });
 
-class CancelOrderAd extends Component {
+class OrderList extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -23,43 +26,38 @@ class CancelOrderAd extends Component {
             loading: true,
         }
     }
-    componentDidMount = async () => {
-        this.getData();
-    }
-    getData = () => {
-        instance.get('/order/list', {
-            params: {
-                page: 0,
-                status: "Đã hủy",
-            }
-        }).then(res => {
+    componentDidUpdate(prevProps,prevState){
+        if(this.props.order != prevProps.order){
+            console.log(this.props.order)
             this.setState({
-                order: res.data.list,
+                order: this.props.order,
                 loading: false
             })
-        })
+        }
     }
     render() {
-        const { order } = this.state;
+        const { order, loading } = this.state;
+        const { classes } = this.props;
         return (
             <Grid container
                 direction='column'
-                justify='center'
+                justify={loading == false ? 'flex-start' : 'center'}
                 alignItems='center'
+                style={{ minHeight: 420 }}
                 spacing={0}>
-                {this.state.loading == false
+                {loading == false
                     ? order.length != 0
                         ? order.map((x) =>
-                            <Grid
-                                key={x.key}
-                                item style={{ width: '100%' }}>
-                                <CardOrderAd
-                                    Phone={x.Address.Phone}
-                                    Name={x.Address.Name}
+                            <Grid 
+                            key = {x.key}
+                            item style={{ width: '100%' }}>
+                                <CardOrder
                                     Key={x.key}
                                     OrderDate={x.OrderDate}
                                     OrderTime={x.OrderTime}
-                                    refresh={this.getData}
+                                    refresh={this.getBillList}
+                                    Rating={x.Rating}
+                                    OrderDetail={x.OrderDetail}
                                     Status={x.Status} />
                             </Grid>
                         )
@@ -80,7 +78,7 @@ class CancelOrderAd extends Component {
     }
 }
 
-CancelOrderAd.propTypes = {
+OrderList.propTypes = {
     classes: PropTypes.object.isRequired,
 };
-export default withStyles(styles)(CancelOrderAd);
+export default withStyles(styles)(OrderList);

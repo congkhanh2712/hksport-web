@@ -82,7 +82,7 @@ class Info extends Component {
                     style={{ margin: 10, backgroundColor: 'white', borderRadius: 10, shadow: 10, height: 214 }}
                 >
                     <Grid container spacing={0}>
-                        <Grid container xs={3} alignItems='center' justify='center'>
+                        <Grid container item xs={3} alignItems='center' justify='center'>
                             <Avatar className={classes.sizeAva} alt="Avatar"
                                 style={{ marginBlock: 10 }}
                                 src={file != null ? URL.createObjectURL(file) : avatar} />
