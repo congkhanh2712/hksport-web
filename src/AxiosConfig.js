@@ -8,7 +8,6 @@ instance.interceptors.request.use(async function (config) {
     if (user != null) {
         instance.defaults.headers['x-access-token'] = user.token;
     };
-    console.log(config)
     return config;
 }, function (error) {
     // Do something with request error

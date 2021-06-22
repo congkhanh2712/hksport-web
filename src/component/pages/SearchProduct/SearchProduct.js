@@ -376,7 +376,7 @@ class SearchProduct extends Component {
                                 <RadioGroup row aria-label="position" name="position" defaultValue="latest" value={this.state.selectedValue} onChange={this.handleChange} style={{ marginLeft: 20, marginRight: 20, marginTop: 10 }}>
                                     <FormControlLabel value="latest" control={<Radio color="primary" />} label="Mới nhất" style={{ marginRight: 80 }} />
                                     <FormControlLabel value="popular" control={<Radio color="primary" />} label="Phổ biến" style={{ marginRight: 80 }} />
-                                    <FormControlLabel value="fromhighprice" control={<Radio color="primary" />} label="Giá giảm dần" style={{ marginRight: 80 }} />
+                                    <FormControlLabel value="fromhighprice" control={<Radio color="primary" />} label="Giá giảm dần" style={{ marginRight: 75 }} />
                                     <FormControlLabel value="fromlowprice" control={<Radio color="primary" />} label="Giá tăng dần" />
                                 </RadioGroup>
                             </FormControl>

@@ -33,6 +33,7 @@ import ShipAddress from './component/account/ShipAddress';
 import Cart from './component/account/Cart/Cart';
 import ManageOrder from './component/account/ManageOrder/ManageOrder'
 import SearchProduct from './component/pages/SearchProduct/SearchProduct'
+import DetailProduct from "./component/pages/DetailProduct/DetailProduct"
 import instance from './AxiosConfig';
 import { API_Key } from '../package.json';
 import { createBrowserHistory } from "history";
@@ -160,12 +161,12 @@ export default class App extends Component {
             search = this.removeVietnameseTones(search);
         }
         const { role } = this.state;
-        console.log(role)
         return (
             <Router>
                 <Navbar
                     isLogin={this.state.isLogin}
                     isLogout={this.isLogout}
+                    login={this.isLogin}
                     isAdmin={this.state.role}
                     searchProduct={this.searchProduct}
                 />
@@ -210,6 +211,16 @@ export default class App extends Component {
                     </Route>
                     <Route path='/sign-up'>
                         <SignUp />
+                    </Route>
+                    <Route path="/detail-product/:slug" exact>
+                        {({ match }) => <DetailProduct isLogin={this.isLogin} match={match} />}
+                    </Route>
+                    <Route path="/search-product/:slug" exact>
+                        {({ match }) => <SearchProduct
+                            keyProductType={this.state.key}
+                            props={this.state.search}
+                            isLogin={this.isLogin}
+                            match={match} />}
                     </Route>
                     <Route path='/marketing' component={Marketing} />
                     <Route path='/consulting' component={Consulting} />
@@ -280,13 +291,6 @@ export default class App extends Component {
                         </Route>
                         : null
                     }
-                    <Route path="/search-product/:slug" exact>
-                        {({ match }) => <SearchProduct
-                            keyProductType={this.state.key}
-                            props={this.state.search}
-                            isLogin={this.isLogin}
-                            match={match} />}
-                    </Route>
                 </Switch>
                 {this.state.role === "admin" ? "" : <FooterContainer />}
                 {search !== "" ? <Redirect to={`/search-product/${search}`} /> : ""}

@@ -64,6 +64,13 @@ class Cart extends Component {
             loading: false
         })
     }
+    componentDidUpdate = (prevProps, prevState) => {
+        if (prevProps.money != this.props.money) {
+            this.setState({
+                money: this.props.money
+            })
+        }
+    }
     getRoleData(role, c, d, w) {
         instance.get('/role')
             .then(res => {
@@ -169,7 +176,6 @@ class Cart extends Component {
         const { width, height, loading, money, normalShip, fastShip, payment,
             name, phone, address, ward, district, city, normalPrice, fastPrice,
             point, pointAvailable, pointUsed, isEnable } = this.state;
-        console.log(money)
         return (
             <Box style={{ width: '25%' }}>
                 <Typography component="h1" variant="h5"
@@ -246,7 +252,7 @@ class Cart extends Component {
                                                     name="fastShip"
                                                     color="primary"
                                                 />}
-                                                label={`Giao hàng tiêu hỏa tốc 
+                                            label={`Giao hàng tiêu hỏa tốc 
                                                 (${fastPrice} vnđ)`} />
                                     </FormGroup>
                                     <FormHelperText>Vui lòng chọn 1 trong 2</FormHelperText>

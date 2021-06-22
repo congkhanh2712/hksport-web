@@ -2,6 +2,7 @@ import { Component } from "react";
 import React from 'react';
 import Button from './Button';
 import './Navbar.css'
+import Tooltip from '@material-ui/core/Tooltip';
 import Dropdown from './Dropdown';
 import ShoppingCartIcon from '@material-ui/icons/ShoppingCart';
 import Badge from '@material-ui/core/Badge';
@@ -28,21 +29,45 @@ export default class Navbar extends Component {
         var user = null;
         if (localStorage && localStorage.getItem('user')) {
             user = JSON.parse(localStorage.getItem("user"));
+            this.props.login(user)
+            this.addListener();
         };
+    }
+    componentDidUpdate = (prevProps, prevState) => {
+        if (prevProps.isAdmin != this.props.isAdmin) {
+            if (this.props.isAdmin == "") {
+                fbApp.database().ref('TblCart').off();
+                this.setState({
+                    cartLength: 0
+                })
+            } else {
+                this.addListener();
+            }
+        }
+    }
+    addListener = () => {
+        var user = null;
+        user = JSON.parse(localStorage.getItem("user"));
         if (user != null) {
-            instance.defaults.headers['x-access-token'] = user.token;
             instance.get('/auth/').then(res => {
                 console.log(res.data)
                 if (res.status == 200) {
                     fbApp.database().ref('TblCart').child(res.data.uid)
                         .on('value', snap => {
-                            this.setState({
-                                cartLength: snap.numChildren() - 1
-                            })
+                            if (snap.numChildren() <= 1) {
+                                this.setState({
+                                    cartLength: 0
+                                })
+                            } else {
+                                this.setState({
+                                    cartLength: snap.numChildren() - 1
+                                })
+                            }
                         })
                 }
             }).catch(err => console.log(err))
         }
+
     }
     handleClick = () => {
         this.setState({
@@ -187,14 +212,16 @@ export default class Navbar extends Component {
                         isLogout={this.props.isLogout}
                     />
                     {this.props.isAdmin === "user"
-                        ? <div style={{ marginLeft: 70 }}>
-                            <Link to="/cart">
-                                <IconButton aria-label="add to shopping cart">
-                                    <Badge badgeContent={this.state.cartLength} color="error">
-                                        <ShoppingCartIcon htmlColor='white' />
-                                    </Badge>
-                                </IconButton>
-                            </Link>
+                        ? <div style={{ marginInline: 30 }}>
+                            <Tooltip title="Đi đến giỏ hàng của bạn" placement="bottom">
+                                <Link to="/cart">
+                                    <IconButton aria-label="add to shopping cart">
+                                        <Badge badgeContent={this.state.cartLength} color="error">
+                                            <ShoppingCartIcon htmlColor='white' />
+                                        </Badge>
+                                    </IconButton>
+                                </Link>
+                            </Tooltip>
                         </div>
                         : null
                     }

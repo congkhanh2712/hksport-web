@@ -9,6 +9,15 @@ import TextField from '@material-ui/core/TextField';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
 import DeleteOutlineIcon from '@material-ui/icons/DeleteOutline';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import Button from '@material-ui/core/Button';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import Slide from '@material-ui/core/Slide';
+
+const Transition = React.forwardRef(function Transition(props, ref) {
+    return <Slide direction="up" ref={ref} {...props} />;
+});
 
 const GREY = "#D4D4D4";
 const styles = ({
@@ -23,8 +32,8 @@ class CartItem extends Component {
         this.state = {
             width: window.innerWidth,
             height: window.innerHeight,
-            cartItems: null,
-            loading: true,
+            removeDialog: false,
+            quantity: 0,
         }
     }
 
@@ -37,24 +46,48 @@ class CartItem extends Component {
         })
         this.setState({
             cartItems: this.props.cartItems,
-            loading: this.props.loading,
+            quantity: this.props.item.Quantity
         })
     }
-    componentDidUpdate = (prevProps, prevState) => {
-        if (prevProps.cartItems != this.props.cartItems) {
-            this.setState({
-                cartItems: this.props.cartItems
-            })
+    openRemoveDialog = () => {
+        this.setState({
+            removeDialog: true
+        })
+    }
+    closeRemoveDialog = () => {
+        this.setState({
+            removeDialog: false
+        })
+    }
+    onChange = async (event) => {
+        var name = event.target.name;
+        var value = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
+        this.setState({
+            [name]: value
+        });
+    }
+    handleClick = (type) => {
+        const { quantity } = this.state;
+        if (type == 'increase') {
+            this.setState({ quantity: quantity + 1 })
+        } else {
+            if (quantity >= 1) {
+                this.setState({ quantity: quantity - 1 })
+            }
         }
-        if (prevProps.loading != this.props.loading) {
-            this.setState({
-                loading: this.props.loading
-            })
+    }
+    saveChanges = () => {
+        const { quantity } = this.state;
+        const { item } = this.props;
+        if (quantity == 0) {
+            this.openRemoveDialog();
+        } else {
+            this.props.update(item.ProductID, item.Size, quantity);
         }
     }
     render() {
         const { classes, item } = this.props;
-        const { width } = this.state;
+        const { width, removeDialog, quantity } = this.state;
         const productWidth = width * 0.1;
         return (
             <Grid
@@ -93,7 +126,7 @@ class CartItem extends Component {
                         <ButtonGroup
                             style={{ alignItems: 'center' }}>
                             <IconButton
-                                variant="outlined"
+                                onClick={() => this.handleClick("decrease")}
                                 aria-label="decrease quantity">
                                 <IndeterminateCheckBoxIcon />
                             </IconButton>
@@ -101,27 +134,58 @@ class CartItem extends Component {
                                 variant="outlined"
                                 margin="normal"
                                 name="quantity"
+                                onChange={this.onChange}
                                 style={{ width: '25%' }}
-                                value={item.Quantity}
+                                value={quantity}
                                 InputProps={{
                                     readOnly: true,
                                 }}
                             />
-                            <IconButton aria-label="increase quantity">
+                            <IconButton
+                                onClick={() => this.handleClick("increase")}
+                                aria-label="increase quantity">
                                 <AddBoxIcon />
                             </IconButton>
                         </ButtonGroup>
+                        {quantity != item.Quantity
+                            ? <Button onClick={this.saveChanges} variant="contained" color="default">
+                                Lưu thay đổi
+                            </Button>
+                            : null
+                        }
                     </Grid>
                     <Typography variant="subtitle1" style={{ fontWeight: 'bold' }}>
-                        Tổng tiền: {(item.Price * item.Quantity).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")} vnđ
+                        Tổng tiền: {(item.Price * quantity).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")} vnđ
                     </Typography>
                 </Grid>
                 <Grid container item xs={1}
                     style={{ height: '100%', textAlign: 'center' }}>
-                    <IconButton aria-label="delete">
-                        <DeleteOutlineIcon />
-                    </IconButton>
+                        <IconButton aria-label="delete" onClick={this.openRemoveDialog}>
+                            <DeleteOutlineIcon />
+                        </IconButton>
+                    
                 </Grid>
+                <Dialog
+                    open={removeDialog}
+                    TransitionComponent={Transition}
+                    keepMounted
+                    onClose={this.closeRemoveDialog}
+                    aria-labelledby="alert-dialog-slide-title"
+                    aria-describedby="alert-dialog-slide-description"
+                >
+                    <DialogTitle id="alert-dialog-slide-title">Bạn muốn xóa sản phẩm khỏi giỏ hàng?</DialogTitle>
+                    <DialogActions>
+                        <Button onClick={this.closeRemoveDialog} variant="contained" color="default">
+                            Không
+                        </Button>
+                        <Button onClick={() => {
+                            this.props.remove(item.ProductID, item.Size, 0);
+                            this.closeRemoveDialog();
+                        }} variant="contained" color="primary">
+                            Có
+                        </Button>
+                    </DialogActions>
+                </Dialog>
             </Grid>
         )
     }

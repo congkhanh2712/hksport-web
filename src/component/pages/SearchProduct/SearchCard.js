@@ -6,13 +6,18 @@ import CardActionArea from '@material-ui/core/CardActionArea';
 import Grid from '@material-ui/core/Grid';
 import CardContent from '@material-ui/core/CardContent';
 import CardMedia from '@material-ui/core/CardMedia';
-import Button from '@material-ui/core/Button';
+import Button from 'react-bootstrap/Button';
+import CardActions from '@material-ui/core/CardActions';
 import Typography from '@material-ui/core/Typography';
 import Divider from '@material-ui/core/Divider';
 import Rating from '@material-ui/lab/Rating';
 import Box from '@material-ui/core/Box';
 import { green } from '@material-ui/core/colors';
 import toast, { Toaster } from 'react-hot-toast';
+import {
+    BrowserRouter as Router,
+    NavLink,
+} from "react-router-dom";
 
 
 const GREY = "#9E9E9E";
@@ -90,6 +95,19 @@ class SearchCard extends Component {
                         </Grid>
                         
                     </CardContent> : ""}
+                    <CardActions style={{marginTop: -50, marginBottom:25}}>
+                        <NavLink to={`/detail-product/${data.key}`}>
+                            <Button
+                                //onClick={this.sentRatingOrder}
+                                variant="success"
+                                style={{
+                                    fontFamily: `"Roboto", "Helvetica", "Arial", sans-serif`,
+                                    width: "105%",
+                                }}>
+                                Xem chi tiết sản phẩm
+                            </Button>
+                        </NavLink>
+                    </CardActions>
 
                 </CardActionArea>
             </Card>
