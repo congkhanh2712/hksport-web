@@ -50,7 +50,6 @@ export default class Navbar extends Component {
         user = JSON.parse(localStorage.getItem("user"));
         if (user != null) {
             instance.get('/auth/').then(res => {
-                console.log(res.data)
                 if (res.status == 200) {
                     fbApp.database().ref('TblCart').child(res.data.uid)
                         .on('value', snap => {

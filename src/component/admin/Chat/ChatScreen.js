@@ -79,6 +79,8 @@ class ChatScreen extends Component {
                                     this.getData(true);
                                 }
                             })
+                        } else {
+                            this.getData(false);
                         }
                     })
             })
@@ -95,7 +97,7 @@ class ChatScreen extends Component {
                         messageList: res.data.list.reverse(),
                         loading: false,
                         mesLength: res.data.length
-                    }, () => console.log(this.state.messageList[res.data.list.length - 1]))
+                    })
                     if (scroll == true) {
                         this.scrollToBottom();
                     }

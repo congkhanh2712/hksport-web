@@ -41,16 +41,26 @@ import { API_Key } from '../package.json';
 import { withStyles } from '@material-ui/core/styles';
 import PropTypes from 'prop-types';
 import { createBrowserHistory } from "history";
+import ChatView from './component/account/ChatView';
 
 
 const customHistory = createBrowserHistory();
+const GREY = "#D4D4D4";
 const styles = theme => ({
     fab: {
         position: 'fixed',
         bottom: theme.spacing(3),
         right: theme.spacing(5),
     },
+    chatView: {
+        position: 'fixed',
+        right: theme.spacing(5),
+        bottom: theme.spacing(0),
+        boxShadow: `0px 0px 5px 1px ${GREY}`,
+    },
 });
+const chatWidth = window.innerWidth * 0.2;
+const chatHeight = window.innerHeight * 0.55;
 
 
 class App extends Component {
@@ -61,6 +71,7 @@ class App extends Component {
             role: "",
             search: "",
             key: "",
+            chatView: false,
         }
     }
     isLogin = (user) => {
@@ -173,7 +184,7 @@ class App extends Component {
             search = this.removeVietnameseTones(search);
         }
         const { classes } = this.props;
-        const { role } = this.state;
+        const { role, chatView } = this.state;
         return (
             <Router>
                 <Navbar
@@ -306,14 +317,19 @@ class App extends Component {
                     }
                 </Switch>
                 {role == 'user'
-                    ? <Fab color="primary"
-                        aria-label="add"
-                        className={classes.fab}
-                        aria-controls="simple-menu"
-                        aria-haspopup="true"
-                        onClick={() => console.log('Chat click')}>
-                        <ChatIcon />
-                    </Fab>
+                    ? chatView == true
+                        ? <ChatView
+                            close={() => { this.setState({ chatView: false }) }}
+                            login={this.isLogin}
+                            isAdmin={this.state.role} />
+                        : <Fab color="primary"
+                            aria-label="add"
+                            className={classes.fab}
+                            aria-controls="simple-menu"
+                            aria-haspopup="true"
+                            onClick={() => { this.setState({ chatView: true }) }}>
+                            <ChatIcon />
+                        </Fab>
                     : null
                 }
                 {role === "admin" ? "" : <FooterContainer />}
