@@ -18,11 +18,11 @@ import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import CircularProgress from '@material-ui/core/CircularProgress';
-import {
-    BrowserRouter as Router,
-    Link,
-} from "react-router-dom";
+import Comment from './Comment';
+import MuiDialogContent from '@material-ui/core/DialogContent';
 import instance from '../../../AxiosConfig';
+import Dialog from '@material-ui/core/Dialog';
+
 
 const GREY = "#9E9E9E";
 
@@ -48,7 +48,13 @@ const styles = theme => ({
         minWidth: "120",
     },
 });
-
+const DialogContent = withStyles((theme) => ({
+    root: {
+        padding: theme.spacing(0),
+        marginTop: theme.spacing(-3),
+        marginBottom: theme.spacing(0),
+    },
+}))(MuiDialogContent);
 
 class SearchCard extends Component {
     constructor(props) {
@@ -299,8 +305,20 @@ class SearchCard extends Component {
                 })
             })
     }
+    handleClickOpen = (y) => {
+        this.setState({
+            open: true,
+            src: y
+        })
+    };
+    handleClose = () => {
+        this.setState({
+            open: false
+        })
+    };
     render() {
-        const { product, size, loading, imagelist } = this.state;
+        const { product, size, loading, imagelist, open, src } = this.state;
+        const slug = this.props.match.params.slug;
         var { classes } = this.props;
         var sp = 0;
         if (isNaN(parseInt(size))) {
@@ -324,9 +342,11 @@ class SearchCard extends Component {
                                                     <Carousel.Item >
                                                         <img
                                                             height="400"
+                                                            style={{ cursor: 'zoom-in' }}
                                                             className="d-block w-100"
                                                             src={x.Link}
                                                             alt="Hình ảnh"
+                                                            onClick={() => this.handleClickOpen(x.Link)}
                                                         />
                                                     </Carousel.Item>
                                                 )}
@@ -373,7 +393,9 @@ class SearchCard extends Component {
                                         </Grid>
                                     </Grid>
                                     : <Grid container
-                                        direction='column'
+                                        direction='row'
+                                        style={{ minHeight: 250 }}
+                                        justify='center'
                                         alignItems='center'>
                                         <CircularProgress />
                                     </Grid>
@@ -556,8 +578,15 @@ class SearchCard extends Component {
                         </Grid>
                     </Grid>
                 </Grid>
-
-                {/* <Comment slug={slug} product={this.state.product} star={product.Rating * 1} /> */}
+                <Dialog onClose={this.handleClose}
+                    aria-labelledby="customized-dialog-title"
+                    open={open} maxWidth={false}>
+                    <DialogContent dividers>
+                        <img src={src} alt="Hình ảnh"
+                            onClick={() => this.handleClickOpen(src)} />
+                    </DialogContent>
+                </Dialog>
+                <Comment slug={slug} product={product} star={product.Rating * 1} />
             </div>
         )
     }

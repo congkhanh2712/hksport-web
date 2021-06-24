@@ -1,13 +1,10 @@
 import React, { Component } from 'react';
 import { createMuiTheme, withStyles, makeStyles, ThemeProvider } from '@material-ui/core/styles';
 import { Link } from 'react-router-dom';
-import IconButton from '@material-ui/core/IconButton';
 import Button from '@material-ui/core/Button';
-import ButtonGroup from '@material-ui/core/ButtonGroup';
 import PropTypes from 'prop-types';
-import IndeterminateCheckBoxIcon from '@material-ui/icons/IndeterminateCheckBox';
-import AddBoxIcon from '@material-ui/icons/AddBox';
-import TextField from '@material-ui/core/TextField';
+import MuiDialogContent from '@material-ui/core/DialogContent';
+import Dialog from '@material-ui/core/Dialog';
 import AddShoppingCartIcon from '@material-ui/icons/AddShoppingCart';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
@@ -21,6 +18,13 @@ const styles = ({
         boxShadow: `0px 0px 5px 1px ${GREY}`,
     },
 });
+const DialogContent = withStyles((theme) => ({
+    root: {
+        padding: theme.spacing(0),
+        marginTop: theme.spacing(-3),
+        marginBottom: theme.spacing(0),
+    },
+}))(MuiDialogContent);
 
 class Cart extends Component {
     constructor(props) {
@@ -30,6 +34,8 @@ class Cart extends Component {
             height: window.innerHeight,
             cartItems: null,
             loading: true,
+            open: false,
+            src: '',
         }
     }
 
@@ -58,10 +64,20 @@ class Cart extends Component {
             })
         }
     }
+    handleClickOpen = (y) => {
+        this.setState({
+            open: true,
+            src: y
+        })
+    };
+    handleClose = () => {
+        this.setState({
+            open: false
+        })
+    };
     render() {
         const { classes } = this.props;
-        const { width, height, loading, cartItems } = this.state;
-        const productWidth = width * 0.1;
+        const { width, height, loading, cartItems, open, src } = this.state;
         return (
             <Grid container item xs={7}
                 direction='column' justify='flex-start'>
@@ -76,6 +92,7 @@ class Cart extends Component {
                             <CartItem
                                 key={item.ProductID + item.Size}
                                 item={item}
+                                zoomImage={this.handleClickOpen}
                                 remove={this.props.remove}
                                 update={this.props.update} />
                         )
@@ -102,6 +119,14 @@ class Cart extends Component {
                         </Grid>
                     : <CircularProgress />
                 }
+                {/* PHÓNG TO ẢNH */}
+                <Dialog onClose={this.handleClose}
+                    aria-labelledby="customized-dialog-title"
+                    open={open} maxWidth={false}>
+                    <DialogContent dividers>
+                        <img src={src} alt="Hình ảnh" />
+                    </DialogContent>
+                </Dialog>
             </Grid>
         )
     }

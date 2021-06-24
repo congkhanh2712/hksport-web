@@ -14,12 +14,22 @@ import Typography from '@material-ui/core/Typography';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Switch from '@material-ui/core/Switch';
 import instance from '../../../AxiosConfig';
+import vn from '../vn.json';
+import AddressDialog from './Dialog/AddressDialog';
+import ShipDialog from './Dialog/ShipDialog';
+import VoucherDialog from './Dialog/VoucherDialog';
+import ButtonGroup from '@material-ui/core/ButtonGroup';
+import TextField from '@material-ui/core/TextField';
+
 
 const GREY = "#D4D4D4";
 const styles = ({
     well: {
         boxShadow: `0px 0px 5px 1px ${GREY}`,
     },
+    button: {
+        fontFamily: `Arial, Helvetica, sans-serif`,
+    }
 });
 
 class Cart extends Component {
@@ -44,10 +54,18 @@ class Cart extends Component {
             benefit: {},
             voucher: {},
             normalPrice: 0,
-            fastPrice: 0,
+            fastPrice: 1,
             roleList: [],
             pointUsed: 0,
             isEnable: false,
+            shipDialog: false,
+            addressDialog: false,
+            voucherDialog: false,
+            distance: 0,
+            note: '',
+            voucher: null,
+            voucherAvailable: false,
+            discount: 0,
         }
     }
 
@@ -61,13 +79,16 @@ class Cart extends Component {
         this.getUserData();
         this.setState({
             money: this.props.money,
-            loading: false
         })
     }
     componentDidUpdate = (prevProps, prevState) => {
         if (prevProps.money != this.props.money) {
             this.setState({
                 money: this.props.money
+            }, () => {
+                if (this.state.voucher != null) {
+                    this.phanTramDiscount(this.state.voucher);
+                }
             })
         }
     }
@@ -78,8 +99,8 @@ class Cart extends Component {
                     if (e.key == role) {
                         this.setState({
                             benefit: e.Benefit,
-                            normalPrice: 0,
-                            fastPrice: 0,
+                            normalPrice: this.getShipPrice(e.Benefit, c, d, w, 0),
+                            fastPrice: this.getShipPrice(e.Benefit, c, d, w, 1),
                         })
                     }
                 })
@@ -87,6 +108,66 @@ class Cart extends Component {
                     roleList: res.data
                 })
             })
+    }
+    //Tính tiền ship
+    getShipPrice(b, city, district, ward, type) {
+        //Lấy tọa độ nơi nhận
+        var location = '';
+        for (let i = 0; i < vn.length; i++) {
+            if (vn[i].name == city) {
+                for (let j = 0; j < vn[i].huyen.length; j++) {
+                    if (vn[i].huyen[j].name == district) {
+                        for (let z = 0; z < vn[i].huyen[j].xa.length; z++) {
+                            if (vn[i].huyen[j].xa[z].name == ward) {
+                                location = vn[i].huyen[j].xa[z].location;
+                                z = vn[i].huyen[j].xa.length;
+                            }
+                        }
+                        j = vn[i].huyen.length;
+                    }
+                }
+                i = vn.length;
+            }
+        }
+        var distance = this.getDistanceFromLatLonInKm(10.838650, 106.776147, this.getLat(location), this.getLong(location));
+        this.setState({
+            distance
+        }, () => {
+            console.log(this.state.distance)
+        })
+        if (type == 0) {
+            if (city != "Thành phố Hồ Chí Minh") {
+                if (city.toLowerCase().indexOf('thành phố') != -1 || district.toLowerCase().indexOf('thành phố')) {
+                    return 35000;
+                } else {
+                    return 50000;
+                }
+            } else {
+                return 22000;
+            }
+        } else {
+            if (distance > b.ShipDistance) {
+                if (this.state.normalShip != true) {
+                    this.setState({
+                        normalShip: true,
+                        fastShip: false
+                    })
+                }
+                return 0;
+            }
+            else {
+                if (b.Freeship == false) {
+                    if (distance < 2) {
+                        return 15000;
+                    }
+                    else {
+                        return (parseInt(15000 + (distance - 2) * 2500));
+                    }
+                }
+                else return 0;
+            }
+
+        }
     }
     //Lấy tọa độ địa chỉ khách hàng
     getLat(str) {
@@ -118,6 +199,9 @@ class Cart extends Component {
         return d;
     }
     getUserData() {
+        this.setState({
+            loading: true
+        })
         instance.get('/auth/')
             .then(res => {
                 this.getRoleData(res.data.Role, res.data.Address.City, res.data.Address.District, res.data.Address.Ward);
@@ -129,7 +213,8 @@ class Cart extends Component {
                     city: res.data.Address.City,
                     ward: res.data.Address.Ward,
                     district: res.data.Address.District,
-                    address: res.data.Address.Detail
+                    address: res.data.Address.Detail,
+                    loading: false,
                 })
             })
     }
@@ -148,10 +233,10 @@ class Cart extends Component {
             })
         } else if (name == 'isEnable') {
             if (value == true) {
-                if (this.state.money < this.state.pointAvailable) {
+                if (this.state.money - this.state.discount < this.state.pointAvailable) {
                     this.setState({
                         [name]: value,
-                        pointUsed: this.state.money
+                        pointUsed: this.state.money - this.state.discount
                     })
                 } else {
                     this.setState({
@@ -171,13 +256,72 @@ class Cart extends Component {
             });
         }
     }
+    closeShipDialog = () => {
+        this.setState({
+            shipDialog: false
+        })
+    }
+    closeVoucherDialog = () => {
+        this.setState({
+            voucherDialog: false
+        })
+    }
+    closeAddressDialog = () => {
+        this.setState({
+            addressDialog: false
+        })
+    }
+    saveChanges = (name, address, phone, ward, city, district) => {
+        const { benefit } = this.state;
+        this.setState({
+            name, address, phone, ward, city, district,
+            normalPrice: this.getShipPrice(benefit, city, district, ward, 0),
+            fastPrice: this.getShipPrice(benefit, city, district, ward, 1),
+        })
+    }
+    phanTramDiscount(v) {
+        let value = 0
+        const { money } = this.state;
+        console.log(money)
+        if (money >= v.ValidFrom) {
+            this.setState({
+                voucherAvailable: true,
+            })
+            if (money * (v.Discount.slice(0, v.Discount.length - 1) / 100) < v.Max) {
+                value = money * (v.Discount.slice(0, v.Discount.length - 1) / 100);
+            } else {
+                value = v.Max;
+            }
+        } else {
+            this.setState({
+                voucherAvailable: false,
+            })
+        }
+        this.setState({
+            discount: value
+        }, () => console.log(this.state.discount))
+    }
+    useVoucher = (item) => {
+        if (item != null) {
+            this.setState({
+                voucher: item,
+            })
+            this.phanTramDiscount(item);
+        } else {
+            this.setState({
+                voucher: null,
+                voucherAvailable: false,
+                discount: 0
+            })
+        }
+    }
     render() {
         const { classes } = this.props;
-        const { width, height, loading, money, normalShip, fastShip, payment,
-            name, phone, address, ward, district, city, normalPrice, fastPrice,
-            point, pointAvailable, pointUsed, isEnable } = this.state;
+        const { width, height, loading, money, normalShip, fastShip, payment, note, roleList, discount,
+            name, phone, address, ward, district, city, normalPrice, fastPrice, voucherDialog, voucher, voucherAvailable,
+            point, pointAvailable, pointUsed, isEnable, shipDialog, benefit, addressDialog, distance } = this.state;
         return (
-            <Box style={{ width: '25%' }}>
+            <Box style={{ width: '28%' }}>
                 <Typography component="h1" variant="h5"
                     style={{ width: '100%', textAlign: 'left', fontWeight: 'bold' }}
                     gutterBottom>
@@ -203,10 +347,34 @@ class Cart extends Component {
                                     <Typography variant="h6">
                                         Thông tin nhận hàng
                                     </Typography>
-                                    <Button
-                                        color="primary">
-                                        THAY ĐỔI
-                                    </Button>
+                                    <ButtonGroup variant="text" color="primary">
+                                        <Button
+                                            onClick={() => {
+                                                this.setState({
+                                                    addressDialog: true
+                                                })
+                                            }}
+                                            color="primary">
+                                            <div style={{
+                                                fontFamily: `Arial, Helvetica, sans-serif`,
+                                                color: '#0072E1'
+                                            }}>
+                                                THAY ĐỔI
+                                            </div>
+                                        </Button>
+                                        <Button
+                                            onClick={() => {
+                                                this.getUserData();
+                                            }}
+                                            color="primary">
+                                            <div style={{
+                                                fontFamily: `Arial, Helvetica, sans-serif`,
+                                                color: '#0072E1'
+                                            }}>
+                                                mặc định
+                                            </div>
+                                        </Button>
+                                    </ButtonGroup>
                                 </Grid>
                                 <Typography variant="subtitle1"
                                     style={{ fontWeight: 'bold' }}>
@@ -233,6 +401,12 @@ class Cart extends Component {
                                         style={{ color: 'black', fontWeight: 'bold' }}>
                                         Hình thức vận chuyển
                                     </FormLabel>
+                                    <div style={{
+                                        fontFamily: `Arial, Helvetica, sans-serif`,
+                                        color: '#0072E1', cursor: 'pointer', fontSize: 15
+                                    }} onClick={() => { this.setState({ shipDialog: true }) }}>
+                                        Xem thông tin về hình thức vận chuyển
+                                    </div>
                                     <FormGroup>
                                         <FormControlLabel
                                             control={
@@ -243,17 +417,18 @@ class Cart extends Component {
                                                     color="primary"
                                                 />}
                                             label={`Giao hàng tiêu chuẩn 
-                                            (${normalPrice} vnđ)`} />
+                                            ( ${normalPrice.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")} vnđ )`} />
                                         <FormControlLabel
                                             control={
                                                 <Checkbox
                                                     checked={fastShip}
                                                     onChange={this.onChange}
+                                                    disabled={benefit.ShipDistance >= distance ? false : true}
                                                     name="fastShip"
                                                     color="primary"
                                                 />}
-                                            label={`Giao hàng tiêu hỏa tốc 
-                                                (${fastPrice} vnđ)`} />
+                                            label={`Giao hàng hỏa tốc 
+                                                ( ${fastPrice.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")} vnđ )`} />
                                     </FormGroup>
                                     <FormHelperText>Vui lòng chọn 1 trong 2</FormHelperText>
                                 </FormControl>
@@ -307,7 +482,7 @@ class Cart extends Component {
                                     } vnđ
                                 </Typography>
                                 <Typography variant="subtitle1">
-                                    Tiền giảm từ voucher: -0 vnđ
+                                    Tiền giảm từ voucher: -{discount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")} vnđ
                                 </Typography>
                                 <Typography variant="subtitle1">
                                     Tiền giảm từ điểm tích lũy: -{
@@ -318,11 +493,12 @@ class Cart extends Component {
                                     style={{ fontWeight: 'bold', fontSize: 17 }}
                                     gutterBottom>
                                     Tổng thanh toán: {normalShip == true
-                                        ? (normalPrice + money - pointUsed).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")
-                                        : (fastPrice + money - pointUsed).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+                                        ? (normalPrice + money - pointUsed - discount).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+                                        : (fastPrice + money - pointUsed - discount).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")
                                     } vnđ
                                 </Typography>
                             </Box>
+                            {/* TÙY CHỌN */}
                             <Box style={{ padding: 10 }}>
                                 <Grid container item
                                     direction='row' justify='space-between'>
@@ -330,8 +506,30 @@ class Cart extends Component {
                                         Ưu đãi:
                                     </Typography>
                                     <Button
+                                        onClick={() => {
+                                            this.setState({ voucherDialog: true })
+                                        }}
                                         color="primary">
-                                        Chọn ưu đãi
+                                        {voucher != null
+                                            ? voucherAvailable
+                                                ? <div style={{
+                                                    fontFamily: `Arial, Helvetica, sans-serif`,
+                                                    color: '#0072E1'
+                                                }}>
+                                                    Bạn đang sử dụng {voucher.Code}
+                                                </div>
+                                                : <div style={{
+                                                    fontFamily: `Arial, Helvetica, sans-serif`,
+                                                    color: '#FF5F38'
+                                                }}>
+                                                    Bạn chưa đủ điều kiện sử dụng {voucher.Code}
+                                                </div>
+                                            : <div style={{
+                                                fontFamily: `Arial, Helvetica, sans-serif`,
+                                                color: '#0072E1'
+                                            }}>
+                                                chọn ưu đãi
+                                            </div>}
                                     </Button>
                                 </Grid>
                                 <Grid container item
@@ -347,14 +545,53 @@ class Cart extends Component {
                                         color="primary"
                                     />
                                 </Grid>
+                                <TextField
+                                    variant="outlined"
+                                    margin="normal"
+                                    required
+                                    fullWidth
+                                    label="Ghi chú"
+                                    name="note"
+                                    multiline
+                                    rowsMax={3}
+                                    placeholder="Nhập ghi chú bạn muốn gửi đến cửa hàng...."
+                                    onChange={this.onChange}
+                                    value={note}
+                                />
                             </Box>
-                            <Button variant="contained" color="primary" component="span">
+                            <Button variant="contained"
+                                disabled={loading}
+                                color="primary" component="span">
                                 đặt hàng
                             </Button>
                         </Grid>
                         : <CircularProgress />
                     }
                 </Grid>
+                {shipDialog
+                    ? <ShipDialog close={this.closeShipDialog} distance={benefit.ShipDistance} />
+                    : null
+                }
+                {addressDialog
+                    ? <AddressDialog
+                        close={this.closeAddressDialog}
+                        save={this.saveChanges}
+                        name={name}
+                        phone={phone}
+                        address={address}
+                        ward={ward}
+                        district={district}
+                        city={city} />
+                    : null
+                }
+                {voucherDialog
+                    ? <VoucherDialog
+                        point={point}
+                        roleList={roleList}
+                        useVoucher={this.useVoucher}
+                        close={this.closeVoucherDialog} />
+                    : null
+                }
             </Box>
         )
     }

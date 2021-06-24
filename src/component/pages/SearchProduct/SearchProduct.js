@@ -653,8 +653,12 @@ class SearchProduct extends Component {
                             <Grid container spacing={0} style={{ paddingLeft: 20 }}>
                                 {products.map((product, index) => {
                                     return (
-                                        <Grid item xs={6} sm={2} key={index}>
-                                            <SearchCard data={product} rating={fbRatings} />
+                                        <Grid 
+                                        key={product}
+                                        item xs={6} sm={2} key={index}>
+                                            <SearchCard
+                                            key={product}
+                                            data={product} rating={fbRatings} />
                                         </Grid>
                                     )
                                 })}

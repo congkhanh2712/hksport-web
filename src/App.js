@@ -35,13 +35,25 @@ import ManageOrder from './component/account/ManageOrder/ManageOrder'
 import SearchProduct from './component/pages/SearchProduct/SearchProduct'
 import DetailProduct from "./component/pages/DetailProduct/DetailProduct"
 import instance from './AxiosConfig';
+import Fab from '@material-ui/core/Fab';
+import ChatIcon from '@material-ui/icons/Chat';
 import { API_Key } from '../package.json';
+import { withStyles } from '@material-ui/core/styles';
+import PropTypes from 'prop-types';
 import { createBrowserHistory } from "history";
 
 
 const customHistory = createBrowserHistory();
+const styles = theme => ({
+    fab: {
+        position: 'fixed',
+        bottom: theme.spacing(3),
+        right: theme.spacing(5),
+    },
+});
 
-export default class App extends Component {
+
+class App extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -160,6 +172,7 @@ export default class App extends Component {
         if (search !== "") {
             search = this.removeVietnameseTones(search);
         }
+        const { classes } = this.props;
         const { role } = this.state;
         return (
             <Router>
@@ -292,9 +305,24 @@ export default class App extends Component {
                         : null
                     }
                 </Switch>
-                {this.state.role === "admin" ? "" : <FooterContainer />}
+                {role == 'user'
+                    ? <Fab color="primary"
+                        aria-label="add"
+                        className={classes.fab}
+                        aria-controls="simple-menu"
+                        aria-haspopup="true"
+                        onClick={() => console.log('Chat click')}>
+                        <ChatIcon />
+                    </Fab>
+                    : null
+                }
+                {role === "admin" ? "" : <FooterContainer />}
                 {search !== "" ? <Redirect to={`/search-product/${search}`} /> : ""}
             </Router>
         )
     };
 };
+App.propTypes = {
+    classes: PropTypes.object.isRequired,
+};
+export default withStyles(styles)(App);

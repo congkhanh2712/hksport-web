@@ -9,11 +9,10 @@ import TextField from '@material-ui/core/TextField';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
 import DeleteOutlineIcon from '@material-ui/icons/DeleteOutline';
-import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
 import Button from '@material-ui/core/Button';
-import DialogTitle from '@material-ui/core/DialogTitle';
 import Slide from '@material-ui/core/Slide';
+import RemoveDialog from './Dialog/RemoveDialog';
+
 
 const Transition = React.forwardRef(function Transition(props, ref) {
     return <Slide direction="up" ref={ref} {...props} />;
@@ -85,6 +84,11 @@ class CartItem extends Component {
             this.props.update(item.ProductID, item.Size, quantity);
         }
     }
+    remove = () => {
+        const { item } = this.props;
+        this.props.remove(item.ProductID, item.Size, 0);
+        this.closeRemoveDialog();
+    }
     render() {
         const { classes, item } = this.props;
         const { width, removeDialog, quantity } = this.state;
@@ -100,6 +104,8 @@ class CartItem extends Component {
                 <Grid container item xs={4}
                     direction='row' justify='center'>
                     <img
+                        onClick={() => this.props.zoomImage(item.Image)}
+                        style={{ cursor: 'zoom-in' }}
                         width={productWidth}
                         height={productWidth * 5 / 4}
                         src={item.Image} />
@@ -112,7 +118,7 @@ class CartItem extends Component {
                         {item.Name}
                     </Typography>
                     <Typography variant="subtitle1">
-                        Phân loại: {item.Size}
+                        Phân loại: {item.Size != '' ? item.Size : 'Không có'}
                     </Typography>
                     <Typography variant="subtitle1">
                         Đơn giá: {item.Price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")} vnđ
@@ -149,7 +155,12 @@ class CartItem extends Component {
                         </ButtonGroup>
                         {quantity != item.Quantity
                             ? <Button onClick={this.saveChanges} variant="contained" color="default">
-                                Lưu thay đổi
+                                <div style={{
+                                    fontFamily: `Arial, Helvetica, sans-serif`,
+                                    color: 'black'
+                                }}>
+                                    lưu thay đổi
+                                </div>
                             </Button>
                             : null
                         }
@@ -160,32 +171,18 @@ class CartItem extends Component {
                 </Grid>
                 <Grid container item xs={1}
                     style={{ height: '100%', textAlign: 'center' }}>
-                        <IconButton aria-label="delete" onClick={this.openRemoveDialog}>
-                            <DeleteOutlineIcon />
-                        </IconButton>
-                    
+                    <IconButton aria-label="delete" onClick={this.openRemoveDialog}>
+                        <DeleteOutlineIcon />
+                    </IconButton>
+
                 </Grid>
-                <Dialog
-                    open={removeDialog}
-                    TransitionComponent={Transition}
-                    keepMounted
-                    onClose={this.closeRemoveDialog}
-                    aria-labelledby="alert-dialog-slide-title"
-                    aria-describedby="alert-dialog-slide-description"
-                >
-                    <DialogTitle id="alert-dialog-slide-title">Bạn muốn xóa sản phẩm khỏi giỏ hàng?</DialogTitle>
-                    <DialogActions>
-                        <Button onClick={this.closeRemoveDialog} variant="contained" color="default">
-                            Không
-                        </Button>
-                        <Button onClick={() => {
-                            this.props.remove(item.ProductID, item.Size, 0);
-                            this.closeRemoveDialog();
-                        }} variant="contained" color="primary">
-                            Có
-                        </Button>
-                    </DialogActions>
-                </Dialog>
+                {removeDialog
+                    ? <RemoveDialog
+                        closeRemoveDialog={this.closeRemoveDialog}
+                        remove={this.remove}
+                    />
+                    : null
+                }
             </Grid>
         )
     }
