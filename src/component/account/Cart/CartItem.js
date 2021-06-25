@@ -12,6 +12,8 @@ import DeleteOutlineIcon from '@material-ui/icons/DeleteOutline';
 import Button from '@material-ui/core/Button';
 import Slide from '@material-ui/core/Slide';
 import RemoveDialog from './Dialog/RemoveDialog';
+import NotificationDialog from './Dialog/NotificationDialog';
+import fbApp from '../../../Firebase';
 
 
 const Transition = React.forwardRef(function Transition(props, ref) {
@@ -32,7 +34,11 @@ class CartItem extends Component {
             width: window.innerWidth,
             height: window.innerHeight,
             removeDialog: false,
+            notiDialog: false,
             quantity: 0,
+            available: true,
+            nowQuantity: 0,
+            dialogcontent: '',
         }
     }
 
@@ -47,15 +53,50 @@ class CartItem extends Component {
             cartItems: this.props.cartItems,
             quantity: this.props.item.Quantity
         })
-    }
-    openRemoveDialog = () => {
-        this.setState({
-            removeDialog: true
-        })
+        const { item } = this.props;
+        fbApp.database().ref('TblProduct').child(item.ProductID).child('Size')
+            .on('value', snap => {
+                if (item.Size != '') {
+                    if (item.Quantity > snap.val()[item.Size]) {
+                        this.setState({
+                            available: false
+                        })
+                        this.props.errItemsChange("push", item.ProductID, item.Size);
+                    } else {
+                        this.setState({
+                            available: true
+                        })
+                        this.props.errItemsChange("remove", item.ProductID, item.Size);
+                    }
+                    this.setState({
+                        nowQuantity: snap.val()[item.Size]
+                    })
+                } else {
+                    if (item.Quantity > snap.val()) {
+                        this.setState({
+                            available: false
+                        })
+                        this.props.errItemsChange("push", item.ProductID, item.Size);
+                    } else {
+                        this.setState({
+                            available: true
+                        })
+                        this.props.errItemsChange("remove", item.ProductID, item.Size);
+                    }
+                    this.setState({
+                        nowQuantity: snap.val()
+                    })
+                }
+            })
     }
     closeRemoveDialog = () => {
         this.setState({
             removeDialog: false
+        })
+    }
+    closeNotiDialog = () => {
+        this.setState({
+            notiDialog: false
         })
     }
     onChange = async (event) => {
@@ -75,23 +116,38 @@ class CartItem extends Component {
             }
         }
     }
-    saveChanges = () => {
-        const { quantity } = this.state;
+    saveChanges = async () => {
+        const { quantity, nowQuantity } = this.state;
         const { item } = this.props;
         if (quantity == 0) {
-            this.openRemoveDialog();
+            this.setState({
+                removeDialog: true
+            })
         } else {
-            this.props.update(item.ProductID, item.Size, quantity);
+            if (quantity <= nowQuantity) {
+                this.props.errItemsChange("remove", item.ProductID, item.Size);
+                this.props.update(item.ProductID, item.Size, quantity);
+                this.setState({
+                    available: true
+                })
+            } else {
+                this.setState({
+                    notiDialog: true,
+                    dialogcontent: 'Thay đổi thất bại, số sản phẩm bạn chọn vượt quá giới hạn',
+                    quantity: item.Quantity
+                })
+            }
         }
     }
     remove = () => {
         const { item } = this.props;
-        this.props.remove(item.ProductID, item.Size, 0);
+        this.props.update(item.ProductID, item.Size, 0);
         this.closeRemoveDialog();
     }
     render() {
         const { classes, item } = this.props;
-        const { width, removeDialog, quantity } = this.state;
+        const { width, removeDialog, quantity, available, nowQuantity,
+            notiDialog, dialogcontent } = this.state;
         const productWidth = width * 0.1;
         return (
             <Grid
@@ -165,13 +221,34 @@ class CartItem extends Component {
                             : null
                         }
                     </Grid>
+                    {available == true
+                        ? null
+                        : <div>
+                            <p style={{
+                                fontFamily: `Arial, Helvetica, sans-serif`,
+                                color: '#FF5F38', fontStyle: 'italic'
+                            }}>
+                                Sản phẩm này hiện tại không đủ số lượng theo yêu cầu của bạn.
+                            </p>
+                            <p style={{
+                                fontFamily: `Arial, Helvetica, sans-serif`,
+                                color: '#FF5F38', fontStyle: 'italic'
+                            }}>
+                                Số lượng hiện tại: {nowQuantity} sản phẩm
+                            </p>
+                        </div>
+                    }
                     <Typography variant="subtitle1" style={{ fontWeight: 'bold' }}>
                         Tổng tiền: {(item.Price * quantity).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")} vnđ
                     </Typography>
                 </Grid>
                 <Grid container item xs={1}
                     style={{ height: '100%', textAlign: 'center' }}>
-                    <IconButton aria-label="delete" onClick={this.openRemoveDialog}>
+                    <IconButton aria-label="delete" onClick={() => {
+                        this.setState({
+                            removeDialog: true
+                        })
+                    }}>
                         <DeleteOutlineIcon />
                     </IconButton>
 
@@ -180,6 +257,13 @@ class CartItem extends Component {
                     ? <RemoveDialog
                         closeRemoveDialog={this.closeRemoveDialog}
                         remove={this.remove}
+                    />
+                    : null
+                }
+                {notiDialog
+                    ? <NotificationDialog
+                        close={this.closeNotiDialog}
+                        dialogcontent={dialogcontent}
                     />
                     : null
                 }

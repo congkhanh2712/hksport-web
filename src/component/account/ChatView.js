@@ -214,17 +214,24 @@ class ChatView extends Component {
                                 direction='column'>
                                 <ListItem style={item.isMe == true ? { justifyContent: 'flex-end' } : null}>
                                     {item.isMe == false
-                                        ? <Grid container
-                                            justify='center' alignItems='center'
-                                            style={{
-                                                width: 35, height: 35, borderRadius: 35,
-                                                backgroundColor: '#34B089', marginRight: 5,
-                                            }}>
-                                            <Typography variant="body2"
-                                                style={{ color: 'white', fontWeight: 'bold' }}>
-                                                HK
-                                            </Typography>
-                                        </Grid>
+                                        ? index != 0 && !messageList[index - 1].isMe
+                                            ? <Grid container
+                                                justify='center' alignItems='center'
+                                                style={{
+                                                    width: 35, height: 35, marginRight: 5,
+                                                }}>
+                                            </Grid>
+                                            : <Grid container
+                                                justify='center' alignItems='center'
+                                                style={{
+                                                    width: 35, height: 35, borderRadius: 35,
+                                                    backgroundColor: '#34B089', marginRight: 5,
+                                                }}>
+                                                <Typography variant="body2"
+                                                    style={{ color: 'white', fontWeight: 'bold' }}>
+                                                    HK
+                                                </Typography>
+                                            </Grid>
                                         : null
                                     }
                                     {item.Message != ''

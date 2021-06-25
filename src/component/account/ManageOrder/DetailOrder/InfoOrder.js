@@ -41,8 +41,8 @@ class InfoOrder extends Component {
         })
     }
     render() {
-        const { classes, data,processing } = this.props;
-        
+        const { classes, data, processing } = this.props;
+
         return (
             <Grid item xs={6}>
                 <div
@@ -159,7 +159,7 @@ class InfoOrder extends Component {
                         <DialogContent>
                             <Timeline>
                                 {processing.map((x, index) => {
-                                    return <TimelineItem>
+                                    return <TimelineItem key={index}>
                                         <TimelineOppositeContent>
                                             <Typography color="textSecondary">{x.time} {x.title}</Typography>
                                         </TimelineOppositeContent>

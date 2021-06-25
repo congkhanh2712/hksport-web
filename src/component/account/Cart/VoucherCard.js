@@ -99,7 +99,10 @@ class VoucherDialog extends Component {
                 container item xs={12}
                 style={{ borderRadius: 5, backgroundColor: '#ECECEC', marginBottom: 20 }}>
                 <ListItem button onClick={() => { this.choose() }}>
-                    <Grid item xs={2}>
+                    <Grid container item xs={2}
+                        direction='column'
+                        justify='flex-start'
+                        style={{ height: '100%' }}>
                         <img src={item.Image} width={65} height={65} style={{ backgroundColor: '#CBF19A' }} />
                     </Grid>
                     <Grid container item xs={9}
@@ -168,6 +171,20 @@ class VoucherDialog extends Component {
                                 {item.ValidFrom.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")} vnđ
                             </div>
                         </Grid>
+                        {item.Limited == -1
+                            ? <div style={{
+                                fontFamily: `Arial, Helvetica, sans-serif`,
+                                fontSize: 17, fontStyle: 'italic'
+                            }}>
+                                Số lượng khuyến mãi không giới hạn
+                            </div>
+                            : <div style={{
+                                fontFamily: `Arial, Helvetica, sans-serif`,
+                                fontSize: 17, fontStyle: 'italic'
+                            }}>
+                                Còn {item.Limited} khuyến mãi
+                            </div>
+                        }
                         <Typography variant="body1"
                             style={{ fontWeight: 'bold', color: '#FF5F38' }}>
                             Hết hạn sau {this.state.time} {this.state.donvi}
@@ -176,8 +193,8 @@ class VoucherDialog extends Component {
                     <Grid container item xs={1}
                         justify='center' alignItems='center'>
                         {chosing == item
-                        ? <RadioButtonCheckedIcon fontSize='large' />
-                        : <RadioButtonUncheckedIcon fontSize='large' />
+                            ? <RadioButtonCheckedIcon fontSize='large' />
+                            : <RadioButtonUncheckedIcon fontSize='large' />
                         }
                     </Grid>
                 </ListItem>

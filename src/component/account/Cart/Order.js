@@ -20,6 +20,8 @@ import ShipDialog from './Dialog/ShipDialog';
 import VoucherDialog from './Dialog/VoucherDialog';
 import ButtonGroup from '@material-ui/core/ButtonGroup';
 import TextField from '@material-ui/core/TextField';
+import NotificationDialog from './Dialog/NotificationDialog';
+import OrderSuccessDialog from './Dialog/OrderSuccessDialog';
 
 
 const GREY = "#D4D4D4";
@@ -52,7 +54,6 @@ class Cart extends Component {
             district: '',
             address: '',
             benefit: {},
-            voucher: {},
             normalPrice: 0,
             fastPrice: 1,
             roleList: [],
@@ -61,11 +62,13 @@ class Cart extends Component {
             shipDialog: false,
             addressDialog: false,
             voucherDialog: false,
+            notiDialog: false,
             distance: 0,
             note: '',
             voucher: null,
             voucherAvailable: false,
             discount: 0,
+            successDialog: false,
         }
     }
 
@@ -132,8 +135,6 @@ class Cart extends Component {
         var distance = this.getDistanceFromLatLonInKm(10.838650, 106.776147, this.getLat(location), this.getLong(location));
         this.setState({
             distance
-        }, () => {
-            console.log(this.state.distance)
         })
         if (type == 0) {
             if (city != "Thành phố Hồ Chí Minh") {
@@ -282,7 +283,6 @@ class Cart extends Component {
     phanTramDiscount(v) {
         let value = 0
         const { money } = this.state;
-        console.log(money)
         if (money >= v.ValidFrom) {
             this.setState({
                 voucherAvailable: true,
@@ -299,7 +299,7 @@ class Cart extends Component {
         }
         this.setState({
             discount: value
-        }, () => console.log(this.state.discount))
+        })
     }
     useVoucher = (item) => {
         if (item != null) {
@@ -315,9 +315,54 @@ class Cart extends Component {
             })
         }
     }
+    orderClick = async () => {
+        const { cartItems, errItems } = this.props;
+        const { money, normalShip, note, discount, voucher, voucherAvailable,
+            name, phone, address, ward, district, city, normalPrice, fastPrice,
+            pointUsed, benefit, pointAvailable } = this.state;
+        if (errItems.length != 0) {
+            this.setState({
+                notiDialog: true
+            })
+        } else {
+            var payments = 'Thanh toán khi nhận hàng';
+            var shiptype = 'Giao hàng tiêu chuẩn';
+            var shipmoney = normalPrice;
+            var km = '';
+            if (normalShip == false) {
+                shipmoney = fastPrice;
+                shiptype = 'Giao hàng hỏa tốc'
+            }
+            if (voucherAvailable == true && voucher != null) {
+                km = voucher.Code;
+            }
+            //Set lại số lượng từng sản phẩm
+            await instance.put('/products', {
+                orderdetail: cartItems,
+                type: 1,
+            }).then(res => {
+                if (res.status == 200) {
+                    //Set trạng thái giỏ hàng thành false
+                    instance.delete('/cart')
+                }
+            })
+            //Set thông tin đơn hàng
+            instance.post('/order/create', {
+                payment: payments, paystatus: false, shiptype, cartItems,
+                shipmoney, money, discount, benefit, pointUsed,
+                note, km, name, phone, city, address, ward, district, pointAvailable
+            }).then(res => {
+                if (res.status == 200) {
+                    this.setState({
+                        successDialog: true,
+                    })
+                }
+            })
+        }
+    }
     render() {
         const { classes } = this.props;
-        const { width, height, loading, money, normalShip, fastShip, payment, note, roleList, discount,
+        const { loading, money, normalShip, fastShip, payment, note, roleList, discount, notiDialog, successDialog,
             name, phone, address, ward, district, city, normalPrice, fastPrice, voucherDialog, voucher, voucherAvailable,
             point, pointAvailable, pointUsed, isEnable, shipDialog, benefit, addressDialog, distance } = this.state;
         return (
@@ -561,6 +606,7 @@ class Cart extends Component {
                             </Box>
                             <Button variant="contained"
                                 disabled={loading}
+                                onClick={() => this.orderClick()}
                                 color="primary" component="span">
                                 đặt hàng
                             </Button>
@@ -590,6 +636,22 @@ class Cart extends Component {
                         roleList={roleList}
                         useVoucher={this.useVoucher}
                         close={this.closeVoucherDialog} />
+                    : null
+                }
+                {notiDialog
+                    ? <NotificationDialog
+                        close={() => {
+                            this.setState({
+                                notiDialog: false,
+                            })
+                        }}
+                        dialogcontent={`Giỏ hàng của bạn chứa sản phẩm không hợp lệ. 
+                        Vui lòng kiểm tra lại!`}
+                    />
+                    : null
+                }
+                {successDialog
+                    ? <OrderSuccessDialog />
                     : null
                 }
             </Box>

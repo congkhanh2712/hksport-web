@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import './App.css';
 import Navbar from './component/Navbar'
-import Grid from '@material-ui/core/Grid';
+import Tooltip from '@material-ui/core/Tooltip';
 import {
     BrowserRouter as Router,
     Switch,
@@ -47,6 +47,10 @@ import ChatView from './component/account/ChatView';
 const customHistory = createBrowserHistory();
 const GREY = "#D4D4D4";
 const styles = theme => ({
+    header: {
+        position: 'fixed',
+        top: theme.spacing(0),
+    },
     fab: {
         position: 'fixed',
         bottom: theme.spacing(3),
@@ -59,8 +63,6 @@ const styles = theme => ({
         boxShadow: `0px 0px 5px 1px ${GREY}`,
     },
 });
-const chatWidth = window.innerWidth * 0.2;
-const chatHeight = window.innerHeight * 0.55;
 
 
 class App extends Component {
@@ -322,14 +324,17 @@ class App extends Component {
                             close={() => { this.setState({ chatView: false }) }}
                             login={this.isLogin}
                             isAdmin={this.state.role} />
-                        : <Fab color="primary"
-                            aria-label="add"
-                            className={classes.fab}
-                            aria-controls="simple-menu"
-                            aria-haspopup="true"
-                            onClick={() => { this.setState({ chatView: true }) }}>
-                            <ChatIcon />
-                        </Fab>
+                        :
+                        <Tooltip title="Nhắn tin cho shop" placement="top">
+                            <Fab color="primary"
+                                aria-label="add"
+                                className={classes.fab}
+                                aria-controls="simple-menu"
+                                aria-haspopup="true"
+                                onClick={() => { this.setState({ chatView: true }) }}>
+                                <ChatIcon />
+                            </Fab>
+                        </Tooltip>
                     : null
                 }
                 {role === "admin" ? "" : <FooterContainer />}

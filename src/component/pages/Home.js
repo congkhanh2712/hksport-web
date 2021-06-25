@@ -13,7 +13,6 @@ import Grid from '@material-ui/core/Grid';
 import CategoryCard from '../../card/CategoryCard';
 import TopProduct from '../../card/TopProduct';
 import instance from '../../AxiosConfig';
-//import "../../../node_modules/bootstrap/dist/css/bootstrap.min.css"
 const GREY = "#9E9E9E";
 
 const styles = ({

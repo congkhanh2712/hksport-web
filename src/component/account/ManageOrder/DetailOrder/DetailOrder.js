@@ -6,7 +6,7 @@ import InfoOrder from './InfoOrder'
 import InfoPay from './InfoPay'
 import ShipAddress from './ShipAddress'
 import CartOrder from './CartOrder'
-import fbApp from '../../../../Firebase'
+import CircularProgress from '@material-ui/core/CircularProgress';
 import instance from '../../../../AxiosConfig';
 
 const GREY = "#9E9E9E";
@@ -52,7 +52,7 @@ class DetailOrder extends Component {
         const { classes } = this.props;
         if (this.state.loading == false) {
             return (
-                <div className={classes.root} style={{ backgroundColor: "#f0f0f0", minHeight: 500, paddingLeft: "11%", paddingRight: "11%" }}>
+                <div className={classes.root} style={{ backgroundColor: "#f0f0f0", minHeight: 500, paddingInline: "11%" }}>
                     <Grid container spacing={0} >
                         <InfoOrder data={order} processing={order.Timeline} />
                         <ShipAddress address={order.Address} />
@@ -62,7 +62,14 @@ class DetailOrder extends Component {
                 </div>
             )
         } else {
-            return null;
+            return (
+                <Grid container
+                    alignItems='center'
+                    justify='center'
+                    style={{ minHeight: 500 }}>
+                    <CircularProgress />
+                </Grid>
+            )
         }
     }
 }

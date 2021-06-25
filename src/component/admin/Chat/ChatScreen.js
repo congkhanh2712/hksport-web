@@ -192,9 +192,11 @@ class ChatScreen extends Component {
                                 direction='column'>
                                 <ListItem style={item.isMe == false ? { justifyContent: 'flex-end' } : null}>
                                     {item.isMe == true
-                                        ? <ListItemIcon>
-                                            <Avatar src={user.Avatar != '' ? user.Avatar : avatar} />
-                                        </ListItemIcon>
+                                        ? index != 0 && messageList[index - 1].isMe
+                                            ? <ListItemIcon></ListItemIcon>
+                                            : <ListItemIcon>
+                                                <Avatar src={user.Avatar != '' ? user.Avatar : avatar} />
+                                            </ListItemIcon>
                                         : null
                                     }
                                     {item.Message != ''

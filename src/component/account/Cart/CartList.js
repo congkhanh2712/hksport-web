@@ -93,7 +93,7 @@ class Cart extends Component {
                                 key={item.ProductID + item.Size}
                                 item={item}
                                 zoomImage={this.handleClickOpen}
-                                remove={this.props.remove}
+                                errItemsChange={this.props.errItemsChange}
                                 update={this.props.update} />
                         )
                         : <Grid container item

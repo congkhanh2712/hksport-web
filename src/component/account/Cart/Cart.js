@@ -7,12 +7,8 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import CartList from './CartList';
 import Order from './Order';
 import instance from '../../../AxiosConfig';
-import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
-import DialogTitle from '@material-ui/core/DialogTitle';
 import Slide from '@material-ui/core/Slide';
+import NotificationDialog from './Dialog/NotificationDialog';
 
 const Transition = React.forwardRef(function Transition(props, ref) {
     return <Slide direction="up" ref={ref} {...props} />;
@@ -32,6 +28,7 @@ class Cart extends Component {
             width: window.innerWidth,
             height: window.innerHeight,
             cartItems: [],
+            errItems: [],
             loading: true,
             money: 0,
             openDialog: false,
@@ -85,41 +82,37 @@ class Cart extends Component {
             }
         })
     }
-    updateItemQuantity = (pid, size, quantity) => {
-        instance.get('/products/' + pid)
-            .then(res => {
-                if (res.status == 200) {
-                    if (size != '') {
-                        if (quantity > res.data.Size[size]) {
-                            this.setState({
-                                openDialog: true,
-                                dialogcontent: 'Thay đổi thất bại, số sản phẩm bạn chọn vượt quá giới hạn'
-                            })
-                        } else {
-                            this.putData(pid, size, quantity);
-                        }
-                    } else {
-                        if (quantity > res.data.Size) {
-                            this.setState({
-                                openDialog: true,
-                                dialogcontent: 'Thay đổi thất bại, số sản phẩm bạn chọn vượt quá giới hạn'
-                            })
-                        } else {
-                            this.putData(pid, size, quantity);
-                        }
-                    }
-                }
-            })
-    }
     handleClose = () => {
         this.setState({
             openDialog: false,
             dialogcontent: '',
         })
     }
+    errItemsChange = (type, pid, size) => {
+        var err = this.state.errItems;
+        var obj = {
+            ProductID: pid,
+            Size: size,
+        }
+        var i = -1;
+        err.forEach((e, index) => {
+            if (e.ProductID == obj.ProductID && e.Size == obj.Size) {
+                i = index;
+            }
+        })
+        if (type == "push" && i == -1) {
+            err.push(obj)
+        } else if (type == "remove") {
+            err = err.filter(e => e.ProductID != pid || e.Size != size);
+        }
+        this.setState({
+            errItems: err
+        })
+    }
     render() {
         const { classes } = this.props;
-        const { width, height, loading, cartItems, money, openDialog } = this.state;
+        const { width, height, loading, cartItems, money,
+            openDialog, dialogcontent, errItems } = this.state;
         return (
             <Grid container
                 style={{ minHeight: height * 0.55, marginBlock: 15 }}
@@ -129,37 +122,26 @@ class Cart extends Component {
                     : <Grid container item
                         direction='row' justify='center'>
                         <CartList
+                            errItemsChange={this.errItemsChange}
                             cartItems={cartItems}
                             loading={loading}
-                            update={this.updateItemQuantity}
-                            remove={this.putData} />
+                            update={this.putData} />
                         <Grid style={{ width: '1.5%' }}></Grid>
                         {cartItems.length != 0
-                        ? <Order money={money} cartItems={cartItems} />
-                        : null
+                            ? <Order money={money}
+                                errItems={errItems}
+                                cartItems={cartItems} />
+                            : null
                         }
                     </Grid>
                 }
-                <Dialog
-                    open={openDialog}
-                    TransitionComponent={Transition}
-                    keepMounted
-                    onClose={this.handleClose}
-                    aria-labelledby="alert-dialog-slide-title"
-                    aria-describedby="alert-dialog-slide-description"
-                >
-                    <DialogTitle id="alert-dialog-slide-title">THÔNG BÁO</DialogTitle>
-                    <DialogContent>
-                        <DialogContentText id="alert-dialog-slide-description">
-                            {this.state.dialogcontent}
-                        </DialogContentText>
-                    </DialogContent>
-                    <DialogActions>
-                        <Button onClick={this.handleClose} color="primary">
-                            OK
-                        </Button>
-                    </DialogActions>
-                </Dialog>
+                {openDialog == false
+                    ? null
+                    : <NotificationDialog
+                        close={this.handleClose}
+                        dialogcontent={dialogcontent}
+                    />
+                }
             </Grid>
         )
     }

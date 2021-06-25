@@ -1,19 +1,8 @@
 import React, { Component } from 'react';
-import { storage } from "../../../Firebase";
 import PropTypes from 'prop-types';
-import Button from '@material-ui/core/Button';
-import CssBaseline from '@material-ui/core/CssBaseline';
-import TextField from '@material-ui/core/TextField';
-import NativeSelect from '@material-ui/core/NativeSelect';
-import FormControl from '@material-ui/core/FormControl';
 import Grid from '@material-ui/core/Grid';
-import Container from '@material-ui/core/Container';
-import InputLabel from '@material-ui/core/InputLabel';
 import Typography from '@material-ui/core/Typography';
 import { withStyles } from '@material-ui/core/styles';
-import MenuList from '@material-ui/core/MenuList';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import toast, { Toaster } from 'react-hot-toast';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import FavoriteIcon from '@material-ui/icons/Favorite';
 import VisibilityIcon from '@material-ui/icons/Visibility';
@@ -24,6 +13,7 @@ import Box from '@material-ui/core/Box';
 import PinDropIcon from '@material-ui/icons/PinDrop';
 import instance from '../../../AxiosConfig';
 import avatar from '../../../images/ic_avatar.png';
+import ZoomImageDialog from '../../account/Cart/Dialog/ZoomImageDialog';
 
 
 const GREY = "#D4D4D4";
@@ -43,6 +33,7 @@ class UserInfo extends Component {
             user: null,
             otherData: null,
             loading: false,
+            zoomDialog: false,
         }
     }
     componentDidMount = async () => {
@@ -82,7 +73,7 @@ class UserInfo extends Component {
     }
     render() {
         const { classes } = this.props;
-        const { user, otherData, loading } = this.state;
+        const { user, otherData, loading, zoomDialog } = this.state;
         return (
             <Grid container item
                 justify='center'
@@ -97,8 +88,11 @@ class UserInfo extends Component {
                         style={{ width: '95%', paddingBlock: 5, height: '15%' }}
                         direction={'row'}>
                         <img
+                            onClick={() => {
+                                this.setState({ zoomDialog: true })
+                            }}
                             src={user.Avatar != '' ? user.Avatar : avatar}
-                            style={{ width: 65, borderRadius: 65, height: 65 }}
+                            style={{ width: 65, borderRadius: 65, height: 65, cursor: 'zoom-in' }}
                         />
                         <Grid item
                             style={{ width: '75%', paddingInline: 10 }}>
@@ -109,10 +103,11 @@ class UserInfo extends Component {
                                 direction={'row'}
                                 alignItems='flex-start'
                                 style={{ width: '100%' }}>
-                                <img style={{
-                                    width: 25, borderRadius: 25, height: 25,
-                                    backgroundColor: user.Color, marginRight: 10
-                                }} />
+                                <img
+                                    style={{
+                                        width: 25, borderRadius: 25, height: 25,
+                                        backgroundColor: user.Color, marginRight: 10
+                                    }} />
                                 <Typography variant="subtitle1" gutterBottom>
                                     {user.RoleName}
                                 </Typography>
@@ -209,6 +204,14 @@ class UserInfo extends Component {
                         </Box>
                     </Grid>
                     : <CircularProgress />
+                }
+                {zoomDialog
+                    ? <ZoomImageDialog
+                        close={() => {
+                            this.setState({ zoomDialog: false })
+                        }}
+                        src={user.Avatar != '' ? user.Avatar : avatar} />
+                    : null
                 }
             </Grid>
         );

@@ -11,8 +11,11 @@ import SearchIcon from '@material-ui/icons/Search';
 import IconButton from '@material-ui/core/IconButton';
 import Grid from '@material-ui/core/Grid';
 import { Redirect, Link } from 'react-router-dom';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import fbApp from '../Firebase';
 import instance from "../AxiosConfig";
+
+
 
 export default class Navbar extends Component {
     constructor(props) {
@@ -23,6 +26,8 @@ export default class Navbar extends Component {
             search: "",
             redirectSearch: false,
             cartLength: 0,
+            cartItems: [],
+            loading: true,
         }
     }
     componentDidMount = () => {
@@ -38,12 +43,22 @@ export default class Navbar extends Component {
             if (this.props.isAdmin == "") {
                 fbApp.database().ref('TblCart').off();
                 this.setState({
-                    cartLength: 0
+                    cartLength: 0,
+                    cartItems: [],
                 })
             } else {
                 this.addListener();
             }
         }
+    }
+    getCart = () => {
+        instance.get('/cart')
+            .then(res => {
+                this.setState({
+                    cartItems: res.data,
+                    loading: false,
+                });
+            })
     }
     addListener = () => {
         var user = null;
@@ -62,6 +77,7 @@ export default class Navbar extends Component {
                                     cartLength: snap.numChildren() - 1
                                 })
                             }
+                            this.getCart();
                         })
                 }
             }).catch(err => console.log(err))
@@ -90,15 +106,9 @@ export default class Navbar extends Component {
         }
     }
     onMouseLeave = () => {
-        if (window.innerWidth < 960) {
-            this.setState({
-                dropdown: false,
-            })
-        } else {
-            this.setState({
-                dropdown: false,
-            })
-        }
+        this.setState({
+            dropdown: false,
+        })
     }
     onChange = (event) => {
         var target = event.target;
@@ -125,23 +135,7 @@ export default class Navbar extends Component {
         }
     }
     render() {
-        var elmNavbar = <div>
-            <li className="nav-itemh"
-                onMouseEnter={this.onMouseEnter}
-                onMouseLeave={this.onMouseLeave}
-            >
-                <Link to="/services" className="nav-links" onClick={this.closeMobileMenu}>
-                    Services <i class="fas fa-caret-down"></i>
-                </Link>
-                {dropdown && <Dropdown />}
-            </li>
-            <li className="nav-itemh">
-                <Link to="/contact-us" className="nav-links" onClick={this.closeMobileMenu}>
-                    Contact Us
-                </Link>
-            </li>
-        </div>;
-        var { click, dropdown } = this.state;
+        const { click, dropdown, cartItems, loading } = this.state;
         return (
             <div>
                 <nav className="navbarh">
@@ -207,23 +201,30 @@ export default class Navbar extends Component {
                             </Link>
                         </li>
                     </ul>
-                    <Button isLogin={this.props.isLogin}
-                        isLogout={this.props.isLogout}
-                    />
                     {this.props.isAdmin === "user"
-                        ? <div style={{ marginInline: 30 }}>
-                            <Tooltip title="Đi đến giỏ hàng của bạn" placement="bottom">
-                                <Link to="/cart">
-                                    <IconButton aria-label="add to shopping cart">
-                                        <Badge badgeContent={this.state.cartLength} color="error">
-                                            <ShoppingCartIcon htmlColor='white' />
-                                        </Badge>
-                                    </IconButton>
-                                </Link>
-                            </Tooltip>
+                        ? <div style={{ marginRight: 30 }}>
+                            {loading == false
+                                ? <Tooltip title="Đi đến giỏ hàng của bạn" placement="bottom">
+                                    <Link to="/cart">
+                                        <IconButton
+                                            onMouseEnter={this.onMouseEnter}
+                                            onMouseLeave={this.onMouseLeave}
+                                            aria-label="add to shopping cart">
+                                            <Badge badgeContent={this.state.cartLength} color="error">
+                                                <ShoppingCartIcon htmlColor='white' />
+                                            </Badge>
+                                            {dropdown && <Dropdown cartItems={cartItems} />}
+                                        </IconButton>
+                                    </Link>
+                                </Tooltip>
+                                : <CircularProgress style={{ color: 'white' }} size={20} />
+                            }
                         </div>
                         : null
                     }
+                    <Button isLogin={this.props.isLogin}
+                        isLogout={this.props.isLogout}
+                    />
                 </nav>
             </div>
         )

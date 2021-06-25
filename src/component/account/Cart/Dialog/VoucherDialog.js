@@ -51,7 +51,7 @@ class VoucherDialog extends Component {
                 this.setState({
                     voucherList: this.filter(res.data.list),
                     loading: false,
-                }, () => console.log(this.state.voucherList))
+                })
             })
     }
     filter = (items) => {
