@@ -1,6 +1,6 @@
 import { Component } from "react";
 import React from 'react';
-import Button from './Button';
+import LoginButton from './Button';
 import './Navbar.css'
 import Tooltip from '@material-ui/core/Tooltip';
 import Dropdown from './Dropdown';
@@ -11,9 +11,13 @@ import SearchIcon from '@material-ui/icons/Search';
 import IconButton from '@material-ui/core/IconButton';
 import Grid from '@material-ui/core/Grid';
 import { Redirect, Link } from 'react-router-dom';
+import Button from '@material-ui/core/Button';
+import Avatar from '@material-ui/core/Avatar';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import fbApp from '../Firebase';
 import instance from "../AxiosConfig";
+import avatar from '../images/ic_avatar.png';
+import AvaDropdown from './AvaDropdown';
 
 
 
@@ -28,6 +32,7 @@ export default class Navbar extends Component {
             cartLength: 0,
             cartItems: [],
             loading: true,
+            avadropdown: false,
         }
     }
     componentDidMount = () => {
@@ -105,9 +110,25 @@ export default class Navbar extends Component {
             })
         }
     }
+    onAvaMouseEnter = () => {
+        if (window.innerWidth < 960) {
+            this.setState({
+                avadropdown: false,
+            })
+        } else {
+            this.setState({
+                avadropdown: true,
+            })
+        }
+    }
     onMouseLeave = () => {
         this.setState({
             dropdown: false,
+        })
+    }
+    onAvaMouseLeave = () => {
+        this.setState({
+            avadropdown: false,
         })
     }
     onChange = (event) => {
@@ -135,11 +156,12 @@ export default class Navbar extends Component {
         }
     }
     render() {
-        const { click, dropdown, cartItems, loading } = this.state;
+        const { click, dropdown, cartItems, loading, avadropdown } = this.state;
         return (
             <div>
                 <nav className="navbarh">
-                    <Link to={'/'} className="navbar-logo" style={{ textDecoration: 'none' }}><i class="fas fa-futbol"></i> HKSport</Link>
+                    <Link to={'/'} className="navbar-logo" style={{ textDecoration: 'none' }}>
+                        <i class="fas fa-futbol"></i> HKSport</Link>
                     <form
                         noValidate
                         style={{ justifyContent: "start", width: "25%", marginLeft: 40, marginTop: 10 }}
@@ -222,9 +244,18 @@ export default class Navbar extends Component {
                         </div>
                         : null
                     }
-                    <Button isLogin={this.props.isLogin}
-                        isLogout={this.props.isLogout}
-                    />
+                    {this.props.isAdmin === "user"
+                        ? <IconButton onMouseEnter={this.onAvaMouseEnter}
+                            onMouseLeave={this.onAvaMouseLeave}>
+                            <Avatar src={this.props.avatar != '' ? this.props.avatar : avatar} />
+                            {avadropdown && <AvaDropdown isLogout={this.props.isLogout} />}
+                        </IconButton>
+                        : <LoginButton
+                            isAdmin={this.props.isAdmin}
+                            isLogin={this.props.isLogin}
+                            isLogout={this.props.isLogout}
+                        />
+                    }
                 </nav>
             </div>
         )

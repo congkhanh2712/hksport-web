@@ -1,6 +1,6 @@
 .navbarh {
     /* background: linear-gradient(90deg, rgb(28, 27, 27) 0%, rgb(26, 23, 23) 100%); */
-    background: linear-gradient(90deg, rgb(6, 184, 68) 0%, rgb(196, 194, 194) 100%);
+    background-color: rgb(6, 184, 68);
     height: 70px;
     display: flex;
     justify-content: center;

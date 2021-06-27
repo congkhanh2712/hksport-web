@@ -5,6 +5,9 @@
   "API_Key": "AIzaSyBf-gNwY6RWVHEwGNC5Vlm5_jkqxICT8sk",
   "proxy": "http://localhost:5000/tlcnproject/us-central1/app/api",
   "dependencies": {
+    "@devexpress/dx-react-chart": "^2.7.6",
+    "@devexpress/dx-react-chart-material-ui": "^2.7.6",
+    "@devexpress/dx-react-core": "^2.7.6",
     "@material-ui/core": "^4.11.3",
     "@material-ui/icons": "^4.11.2",
     "@material-ui/lab": "^4.0.0-alpha.57",

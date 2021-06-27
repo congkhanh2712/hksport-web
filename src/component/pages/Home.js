@@ -13,6 +13,7 @@ import Grid from '@material-ui/core/Grid';
 import CategoryCard from '../../card/CategoryCard';
 import TopProduct from '../../card/TopProduct';
 import instance from '../../AxiosConfig';
+import ZoomImageDialog from '../account/Cart/Dialog/ZoomImageDialog';
 const GREY = "#9E9E9E";
 
 const styles = ({
@@ -39,6 +40,8 @@ class Home extends Component {
       fbCompetition: [],
       fbProducts: [],
       fbCategory: [],
+      zoomDialog: false,
+      src: '',
     }
   }
 
@@ -80,10 +83,15 @@ class Home extends Component {
         })
       }).catch(err => console.log(err))
   }
-
+  zoomImage = (src) => {
+    this.setState({
+      src,
+      zoomDialog: true
+    })
+  }
   render() {
     const { classes } = this.props;
-    var { fbCompetition, fbProducts, fbCategory } = this.state;
+    var { fbCompetition, fbProducts, fbCategory, zoomDialog, src } = this.state;
 
     var settings = {
       dots: false,
@@ -117,6 +125,8 @@ class Home extends Component {
             {fbCompetition.map((x, index) => {
               return <Carousel.Item key={index}>
                 <img
+                  onClick={() => this.zoomImage(x.Banner)}
+                  style={{ cursor: 'zoom-in' }}
                   height="300"
                   className="d-block w-100"
                   src={x.Banner}
@@ -129,6 +139,8 @@ class Home extends Component {
             {fbCategory.map((x, index) => {
               return <Carousel.Item key={index}>
                 <img
+                  onClick={() => this.zoomImage(x.Image)}
+                  style={{ cursor: 'zoom-in' }}
                   height="300"
                   className="d-block w-100"
                   src={x.Image}
@@ -164,6 +176,14 @@ class Home extends Component {
             classes={this.props.classes}
             category={item}
           />)}
+        {zoomDialog
+          ? <ZoomImageDialog
+            close={() => {
+              this.setState({ zoomDialog: false })
+            }}
+            src={src} />
+          : null
+        }
       </div>
     )
   }

@@ -23,7 +23,7 @@ export default class Dropdown extends Component {
         return (
             <ul
                 onClick={this.handleClick}
-                className={"dropdown-menuh"}
+                className={"dropdown-cart"}
             >
                 {cartItems.slice(0, 3).map((item, index) => {
                     return (

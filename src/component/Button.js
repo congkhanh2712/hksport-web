@@ -1,13 +1,8 @@
 import React, { Component } from 'react';
 import './Button.css'
 import { Link, Redirect } from 'react-router-dom';
-import fbApp from '../Firebase';
-import Snackbar from '@material-ui/core/Snackbar';
-import MuiAlert from '@material-ui/lab/Alert';
+import LogoutDialog from './account/Cart/Dialog/LogoutDialog';
 
-function Alert(props) {
-    return <MuiAlert elevation={6} variant="filled" {...props} />;
-}
 
 export default class Button extends Component {
 
@@ -16,69 +11,46 @@ export default class Button extends Component {
         this.state = {
             isLogout: false,
             isGoToSignIn: true,
-            open: false,
-            vertical: 'top',
-            horizontal: 'right',
+            logoutDialog: false,
         }
     }
 
-    logOut = async () => {
-        fbApp.auth().signOut().then(() => {
-            this.setState({
-                open: true,
-            })
-        })
-        if (this.props.isLogin === true) {
-            await localStorage.removeItem("user");
-            await this.props.isLogout();
-        } else {
-        }
-    }
-
-    handleClose = () => {
-        // setTimeout(() => {
-        //     this.setState({
-        //         open: false,
-        //     })
-        // }, 1000);
-        this.setState({
-            open: false,
-        })
-    }
 
     render() {
         var { isLogin } = this.props;
-        var { open, vertical, horizontal } = this.state
+        const { logoutDialog } = this.state;
         return (
             <div>
                 {!isLogin ?
                     <Link to="/sign-in">
                         <button className="btnh">
                             Đăng nhập
-                    </button>
+                        </button>
                     </Link> : ""
                 }
                 {isLogin ?
                     <Link to="/">
-                        <button className="btnh" onClick={this.logOut}>
+                        <button className="btnh" onClick={() => {
+                            this.setState({
+                                logoutDialog: true
+                            })
+                        }}>
                             Đăng xuất
-                    </button>
+                        </button>
                     </Link> : ""
                 }
-
-                <Snackbar
-                    anchorOrigin={{ vertical, horizontal }}
-                    open={open}
-                    onClose={this.handleClose}
-                    key={vertical + horizontal}
-                    autoHideDuration={3000}
-                    style={{ color: "white" }}
-                >
-                    <Alert severity="success">
-                        Đã đăng xuất
-                    </Alert>
-                </Snackbar>
-
+                {logoutDialog
+                    ? <LogoutDialog
+                        close={() => {
+                            this.setState({
+                                logoutDialog: false
+                            })
+                        }}
+                        logOut={() => {
+                            this.props.isLogout(1);
+                        }} />
+                    : null
+                }
             </div>
 
         )

@@ -1,6 +1,17 @@
 .dropdown-menuh {
+    width: 200px;
+    top: 65px;
+    list-style: none;
+    text-align: start;
+    position:absolute;
+    z-index: 1000;
+    box-shadow: 3px 3px 10px 3px #9E9E9E;
+    background-color: white;
+    padding: 10;
+  }
+  .dropdown-cart {
     width: 350px;
-    top: 80px;
+    top: 70px;
     list-style: none;
     text-align: start;
     position:absolute;

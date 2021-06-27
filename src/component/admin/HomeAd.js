@@ -11,11 +11,8 @@ import Typography from '@material-ui/core/Typography';
 import Box from '@material-ui/core/Box';
 import UpdateProduct from './UpdateProduct'
 import AddVoucher from './voucher/AddVoucher'
-import CancelOrderAd from "./ManageOrderAd/CancelOrderAd"
-import ProcessingOrderAd from "./ManageOrderAd/ProcessingOrderAd"
 import ManageOrder from './ManageOrder';
-import ShippedOrderAd from "./ManageOrderAd/ShippedOrderAd"
-import ShippingOrderAd from "./ManageOrderAd/ShippingOrderAd"
+import Report from './Report';
 import Chat from './Chat';
 
 function TabPanel(props) {
@@ -105,22 +102,26 @@ class HomeAd extends Component {
               scrollButtons="auto"
               aria-label="scrollable auto tabs example"
             >
-              <Tab label="Quản lý sản phẩm" {...a11yProps(0)} />
-              <Tab label="Thêm voucher" {...a11yProps(1)} />
-              <Tab label="Quản lý đơn hàng" {...a11yProps(2)} />
-              <Tab label="Tin nhắn" {...a11yProps(3)} />
+              <Tab label="Báo cáo và thống kê" {...a11yProps(0)} />
+              <Tab label="Quản lý sản phẩm" {...a11yProps(1)} />
+              <Tab label="Thêm voucher" {...a11yProps(2)} />
+              <Tab label="Quản lý đơn hàng" {...a11yProps(3)} />
+              <Tab label="Tin nhắn" {...a11yProps(4)} />
             </Tabs>
           </AppBar>
           <TabPanel value={this.state.value} index={0}>
-            <UpdateProduct />
+            <Report />
           </TabPanel>
           <TabPanel value={this.state.value} index={1}>
-            <AddVoucher />
+            <UpdateProduct />
           </TabPanel>
           <TabPanel value={this.state.value} index={2}>
-            <ManageOrder />
+            <AddVoucher />
           </TabPanel>
           <TabPanel value={this.state.value} index={3}>
+            <ManageOrder />
+          </TabPanel>
+          <TabPanel value={this.state.value} index={4}>
             <Chat />
           </TabPanel>
         </div>

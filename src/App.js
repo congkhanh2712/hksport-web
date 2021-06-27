@@ -74,6 +74,7 @@ class App extends Component {
             search: "",
             key: "",
             chatView: false,
+            ava: '',
         }
     }
     isLogin = (user) => {
@@ -120,6 +121,7 @@ class App extends Component {
             } else {
                 this.setState({
                     role: "user",
+                    ava: res.data.Avatar,
                 })
             }
         }).catch(err => {
@@ -134,11 +136,19 @@ class App extends Component {
             this.isLogin(user);
         };
     }
-    isLogout = () => {
-        this.setState({
-            isLogin: false,
-            role: "",
-        })
+    isLogout = (type) => {
+        if (this.state.isLogin == true) {
+            if (type == 1) {
+                instance.post('/auth/logout')
+            }   
+            localStorage.removeItem("user");     
+            this.setState({
+                isLogin: false,
+                role: "",
+                ava: '',
+            })
+            window.location.pathname = '';
+        }
     }
 
     searchProduct = async (key) => {
@@ -186,10 +196,11 @@ class App extends Component {
             search = this.removeVietnameseTones(search);
         }
         const { classes } = this.props;
-        const { role, chatView } = this.state;
+        const { role, chatView, ava } = this.state;
         return (
             <Router>
                 <Navbar
+                    avatar={ava}
                     isLogin={this.state.isLogin}
                     isLogout={this.isLogout}
                     login={this.isLogin}

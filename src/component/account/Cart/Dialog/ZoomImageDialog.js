@@ -25,9 +25,7 @@ class ZoomImageDialog extends Component {
             <Dialog onClose={()=>this.props.close()}
                 aria-labelledby="customized-dialog-title"
                 open={true} maxWidth={false}>
-                <DialogContent>
-                    <img src={src} alt="Hình ảnh" />
-                </DialogContent>
+                <img src={src} alt="Hình ảnh" />
             </Dialog>
         )
     }
