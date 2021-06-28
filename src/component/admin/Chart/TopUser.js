@@ -23,6 +23,15 @@ const styles = theme => ({
         boxShadow: `0px 0px 5px 1px ${GREY}`,
     },
 });
+const Label = symbol => (props) => {
+    const { text } = props;
+    return (
+        <ValueAxis.Label
+            {...props}
+            text={text + symbol}
+        />
+    );
+};
 
 class TopUser extends React.PureComponent {
     constructor(props) {
@@ -56,19 +65,34 @@ class TopUser extends React.PureComponent {
             })
     }
     onChange = async (event) => {
-        var name = event.target.name;
         var value = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
-        await this.setState({
-            [name]: value,
-        });
-        if (this.state.number < 0) {
+        console.log(this.state.data)
+        if (value < 0) {
             this.setState({
                 number: 0
             })
+        } else if (value > this.state.data.length) {
+            this.setState({
+                number: this.state.data.length
+            })
+        } else {
+            this.setState({
+                number: value
+            })
         }
+    }
+    getUserName = (id) => {
+        var name = ''
+        this.state.data.forEach(e => {
+            if (e.key == id) {
+                name = e.name;
+            }
+        })
+        return name;
     }
     render() {
         const { data, loading, number, targetItem } = this.state;
+        const PriceLabel = Label('đ');
         const { classes } = this.props;
         return (
             <Grid container item xs={6}
@@ -95,15 +119,22 @@ class TopUser extends React.PureComponent {
                         ? <CircularProgress />
                         : <Chart
                             style={{ width: '100%' }}
-                            data={data.reverse().slice(0, parseInt(number) + 1)}
                             rotated
+                            data={data.reverse().slice(0, parseInt(number))}
                         >
-                            <ArgumentAxis />
-                            <ValueAxis />
+                            <ArgumentAxis
+                                labelComponent={(props) =>
+                                    <ArgumentAxis.Label
+                                        {...props}
+                                        text={this.getUserName(props.text)}
+                                    />
+                                } />
+                            <ValueAxis
+                                labelComponent={PriceLabel} />
 
                             <BarSeries
                                 valueField="value"
-                                argumentField="name"
+                                argumentField="key"
                             />
                             <EventTracker />
                             <Animation />
@@ -111,7 +142,7 @@ class TopUser extends React.PureComponent {
                             <Grid container item xs={12}
                                 justify={'flex-end'}
                                 alignItems='center'
-                                style={{ marginBlock: 5,paddingInline: 20 }}>
+                                style={{ marginBlock: 5, paddingInline: 20 }}>
                                 <Grid item xs={2}>
                                     <TextField
                                         value={number}

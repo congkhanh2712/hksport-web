@@ -10,7 +10,7 @@ import Tab from '@material-ui/core/Tab';
 import Typography from '@material-ui/core/Typography';
 import Box from '@material-ui/core/Box';
 import UpdateProduct from './UpdateProduct'
-import AddVoucher from './voucher/AddVoucher'
+import ManageVoucher from './ManageVoucher'
 import ManageOrder from './ManageOrder';
 import Report from './Report';
 import Chat from './Chat';
@@ -104,7 +104,7 @@ class HomeAd extends Component {
             >
               <Tab label="Báo cáo và thống kê" {...a11yProps(0)} />
               <Tab label="Quản lý sản phẩm" {...a11yProps(1)} />
-              <Tab label="Thêm voucher" {...a11yProps(2)} />
+              <Tab label="Quản lý voucher" {...a11yProps(2)} />
               <Tab label="Quản lý đơn hàng" {...a11yProps(3)} />
               <Tab label="Tin nhắn" {...a11yProps(4)} />
             </Tabs>
@@ -116,7 +116,7 @@ class HomeAd extends Component {
             <UpdateProduct />
           </TabPanel>
           <TabPanel value={this.state.value} index={2}>
-            <AddVoucher />
+            <ManageVoucher />
           </TabPanel>
           <TabPanel value={this.state.value} index={3}>
             <ManageOrder />

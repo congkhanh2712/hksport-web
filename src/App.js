@@ -34,6 +34,7 @@ import Cart from './component/account/Cart/Cart';
 import ManageOrder from './component/account/ManageOrder/ManageOrder'
 import SearchProduct from './component/pages/SearchProduct/SearchProduct'
 import DetailProduct from "./component/pages/DetailProduct/DetailProduct"
+import AddVoucher from './component/admin/voucher/AddVoucher';
 import instance from './AxiosConfig';
 import Fab from '@material-ui/core/Fab';
 import ChatIcon from '@material-ui/icons/Chat';
@@ -230,6 +231,15 @@ class App extends Component {
                         ? <Route path='/admin/add-product'>
                             {({ match }) =>
                                 <AddProduct isLogin={this.isLogin}
+                                    match={match}
+                                />}
+                        </Route>
+                        : null
+                    }
+                    {role == 'admin'
+                        ? <Route path='/admin/add-voucher'>
+                            {({ match }) =>
+                                <AddVoucher isLogin={this.isLogin}
                                     match={match}
                                 />}
                         </Route>

@@ -23,7 +23,6 @@ const styles = theme => ({
         boxShadow: `0px 0px 5px 1px ${GREY}`,
     },
 });
-
 class TopProduct extends React.PureComponent {
     constructor(props) {
         super(props);
@@ -72,10 +71,18 @@ class TopProduct extends React.PureComponent {
             });
         }
     }
+    getProductName = (id) => {
+        var name = ''
+        this.state.data.forEach(e => {
+            if (e.key == id) {
+                name = e.name;
+            }
+        })
+        return name;
+    }
     render() {
         const { data, loading, number, targetItem } = this.state;
         const { classes } = this.props;
-
         return (
             <Grid container item xs={6}
                 justify={'space-between'}
@@ -102,16 +109,38 @@ class TopProduct extends React.PureComponent {
                         : <Chart
                             style={{ width: '100%' }}
                             data={data.slice(0, parseInt(number))} >
-                            <ArgumentAxis indentFromAxis={5} />
-                            <ValueAxis />
+                            <ArgumentAxis labelComponent={(props) =>
+                                <ArgumentAxis.Label
+                                    {...props}
+                                    text={this.getProductName(props.text)}
+                                />
+                            } />
+                            <ValueAxis labelComponent={(props) => {
+                                return (
+                                    <ValueAxis.Label
+                                        {...props}
+                                        text={parseInt(props.text) == props.text
+                                            ? parseInt(props.text) + ' sp'
+                                            : ''
+                                        }
+                                    />
+                                );
+                            }} />
                             <BarSeries
                                 valueField="value"
-                                argumentField="name"
+                                argumentField="key"
                                 color='gold'
                             />
                             <EventTracker />
                             <Animation />
-                            <Tooltip targetItem={targetItem} onTargetItemChange={this.changeTargetItem} />
+                            <Tooltip targetItem={targetItem}
+                                onTargetItemChange={this.changeTargetItem}
+                                contentComponent={(props) =>
+                                    <Tooltip.Content
+                                        {...props}
+                                        text={data[props.targetItem.point].name}
+                                    />
+                                } />
                             <Grid container item xs={12}
                                 justify={'flex-end'}
                                 alignItems='center'
