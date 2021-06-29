@@ -105,7 +105,7 @@ export default class AvaDropdown extends Component {
                             onClick={() => {
                                 this.setState({
                                     logoutDialog: true,
-                                    type: 0,
+                                    logoutType: 0,
                                 })
                             }}>
                             Đăng xuất khỏi trình duyệt
@@ -114,7 +114,7 @@ export default class AvaDropdown extends Component {
                             onClick={() => {
                                 this.setState({
                                     logoutDialog: true,
-                                    type: 1,
+                                    logoutType: 1,
                                 })
                             }}>
                             Đăng xuất trên mọi thiết bị
