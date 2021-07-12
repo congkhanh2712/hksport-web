@@ -21,15 +21,13 @@ export default class CategoryCard extends Component {
     componentDidMount() {
         instance.get('/products/category/' + this.props.category.key)
             .then((response) => {
-                console.log(response.data)
                 this.setState({
                     fbProducts: response.data,
                 })
             })
         instance.get('/producttype/' + this.props.category.key, {
             params: { page: 1 }
-        })
-            .then((response) => {
+        }).then((response) => {
                 this.setState({
                     fbType: response.data.list,
                 })

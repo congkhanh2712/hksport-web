@@ -69,6 +69,7 @@ const styles = theme => ({
 class App extends Component {
     constructor(props) {
         super(props);
+        this.refresh = null;
         this.state = {
             isLogin: false,
             role: "",
@@ -82,37 +83,6 @@ class App extends Component {
         this.setState({
             isLogin: true,
         });
-        // var refresh;
-        // if (parseInt(user.expired_time) != 0) {
-        //     refresh = setTimeout(async () => {
-        //         const data = new URLSearchParams();
-        //         data.append('refreshToken', user.refreshToken);
-        //         data.append('grant_type', "refresh_token");
-        //         axios({
-        //             method: 'POST',
-        //             headers:{
-        //                 'content-type': 'application/x-www-form-urlencoded',
-        //             },
-        //             url: 'https://securetoken.googleapis.com/v1/token',
-        //             params: {
-        //                 key: API_Key
-        //             },
-        //             data
-        //         }).then(async res => {
-        //             console.log(res)
-        //             if (res.data != null) {
-        //                 localStorage.setItem('user', JSON.stringify({
-        //                     expired_time: (Date.now() + res.data.expires_in * 1000).toString(),
-        //                     token: res.data.access_token,
-        //                 }));
-        //                 console.log(res.data)
-        //             }
-        //             clearTimeout(refresh);
-        //         }).catch((err) => console.log(err))
-        //     }, parseInt(user.expired_time) - Date.now() - 3480000)
-        // } else {
-        //     clearTimeout(refresh);
-        // }
         instance.defaults.headers['x-access-token'] = user.token;
         instance.get('/auth/').then(res => {
             if (res.data.Role == 'Admin') {
@@ -131,18 +101,48 @@ class App extends Component {
             })
         })
     }
+    refreshToken = (user) => {
+        instance.post('/auth/refresh-token', {
+            token: user.refreshToken
+        }).then((res) => {
+            if (res.status == 200 && res.data.succeed == true) {
+                console.log(res.data)
+                localStorage.setItem('user', JSON.stringify({
+                    refreshToken: user.refreshToken,
+                    expired_time: (Date.now() + 3600000).toString(),
+                    token: res.data.access_token,
+                }));
+            }
+        })
+    }
     componentDidMount() {
         if (localStorage && localStorage.getItem('user')) {
             var user = JSON.parse(localStorage.getItem("user"));
             this.isLogin(user);
+            this.tokenCheck(0);
         };
+    }
+    tokenCheck = (type) => {
+        var user = JSON.parse(localStorage.getItem("user"));
+        console.log(user.expired_time)
+        if (parseInt(user.expired_time) > 0 && parseInt(user.expired_time) - Date.now() > 0) {
+            if (type == 0) {
+                this.refreshToken(user);
+            }
+            this.refresh = setInterval(async () => {
+                this.refreshToken(user);
+            }, 3480000)
+        } else {
+            clearInterval(this.refresh);
+        }
     }
     isLogout = (type) => {
         if (this.state.isLogin == true) {
             if (type == 1) {
                 instance.post('/auth/logout')
-            }   
-            localStorage.removeItem("user");     
+            }
+            localStorage.removeItem("user");
+            clearInterval(this.refresh);
             this.setState({
                 isLogin: false,
                 role: "",
@@ -254,7 +254,7 @@ class App extends Component {
                         <ContactUs isLogin={this.isLogin} />
                     </Route>
                     <Route path='/sign-in'>
-                        <SignIn />
+                        <SignIn tokenCheck={this.tokenCheck} />
                     </Route>
                     <Route path='/sign-up'>
                         <SignUp />

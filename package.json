@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "API_Key": "AIzaSyBf-gNwY6RWVHEwGNC5Vlm5_jkqxICT8sk",
-  "proxy": "http://192.168.1.8:5000/tlcnproject/us-central1/app/api",
+  "proxy": "http://192.168.1.9:5000/tlcnproject/us-central1/app/api",
   "dependencies": {
     "@devexpress/dx-react-chart": "^2.7.6",
     "@devexpress/dx-react-chart-material-ui": "^2.7.6",

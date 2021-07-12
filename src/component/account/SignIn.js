@@ -81,6 +81,7 @@ class SignIn extends Component {
           expired_time: res.data.user.stsTokenManager.expirationTime.toString(),
           token: res.data.user.stsTokenManager.accessToken,
         }));
+        this.props.tokenCheck(1);
         toast.success(res.data.message);
         setTimeout(() => {
           this.setState({
