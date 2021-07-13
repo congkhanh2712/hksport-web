@@ -15,7 +15,9 @@ import { withStyles } from '@material-ui/core/styles';
 import { Redirect, Link } from 'react-router-dom';
 import toast, { Toaster } from 'react-hot-toast';
 import instance from '../../AxiosConfig';
-import { ContactlessOutlined } from '@material-ui/icons';
+import { facebookProvider, auth } from '../../Firebase';
+import FacebookIcon from '@material-ui/icons/Facebook';
+
 
 const styles = theme => ({
   paper: {
@@ -32,9 +34,6 @@ const styles = theme => ({
     width: '100%', // Fix IE 11 issue.
     marginTop: theme.spacing(1),
   },
-  submit: {
-    margin: theme.spacing(3, 0, 2),
-  },
   root: {
     '& > *': {
       margin: theme.spacing(1),
@@ -49,7 +48,11 @@ class SignIn extends Component {
       value: 0,
       email: "",
       password: "",
-      success: false
+      success: false,
+      name: '',
+      fbemail: '',
+      avatar: '',
+      redirect: null,
     }
   }
   componentDidMount = () => {
@@ -93,12 +96,61 @@ class SignIn extends Component {
       }
     })
   }
-
+  signInWithFaceBook = () => {
+    auth.signInWithPopup(facebookProvider)
+      .then((res) => {
+        console.log(res)
+        const profile = res.additionalUserInfo.profile;
+        this.setState({
+          name: profile.name,
+          fbemail: profile.email,
+          avatar: profile.picture.data.url,
+        }, () => {
+          if (res.additionalUserInfo.isNewUser == true) {
+            this.setState({
+              redirect: res.user.za
+            })
+          } else {
+            localStorage.setItem('user', JSON.stringify({
+              refreshToken: res.user.refreshToken,
+              expired_time: (res.user.i.u + 3600000).toString(),
+              token: res.user.za,
+            }));
+            this.props.tokenCheck(1);
+            toast.success("Đăng nhập thành công");
+            setTimeout(() => {
+              this.setState({
+                success: true,
+              })
+            }, 2000);
+          }
+        })
+      }).catch(err => {
+        console.log(err)
+        if (err.code == 'auth/account-exists-with-different-credential') {
+          toast.error('Tài khoản đã tồn tại trong hệ thống. Vui lòng nhập mật khẩu để đăng nhập')
+          this.setState({
+            email: err.email
+          })
+        }
+      })
+  }
   render() {
-    const { success } = this.state;
+    const { success, redirect, name, avatar, fbemail } = this.state;
     const { classes } = this.props;
     if (success === true) {
       return <Redirect to="/" />
+    }
+    if (redirect != null) {
+      return <Redirect to={{
+        pathname: "/sign-up",
+        state: {
+          name,
+          fbemail,
+          avatar,
+          credential: redirect
+        }
+      }} />
     }
     return (
       <Container component="main" maxWidth="xs" >
@@ -121,6 +173,7 @@ class SignIn extends Component {
               name="email"
               autoComplete="email"
               autoFocus
+              value={this.state.email}
               onChange={this.onChange}
             />
             <TextField
@@ -140,11 +193,20 @@ class SignIn extends Component {
               label="Remember me"
             />
             <Button
+              onClick={this.signInWithFaceBook}
+              fullWidth
+              variant="contained"
+              color="primary"
+              startIcon={<FacebookIcon />}
+            >
+              Sign In With Facebook
+            </Button>
+            <Button
               type="submit"
               fullWidth
               variant="contained"
               color="primary"
-              className={classes.submit}
+              style={{ marginBlock: 10 }}
             >
               Sign In
             </Button>

@@ -92,7 +92,6 @@ class SearchProduct extends Component {
     };
 
     componentDidMount = async () => {
-
         var user
         var from
         if (localStorage && localStorage.getItem('user')) {
@@ -271,16 +270,18 @@ class SearchProduct extends Component {
     render() {
         var { fbProducts, fbBrand, fbCompetition, fbCategory, fbRatings, fbProductType, products, selectedValue, productType } = this.state;
         var { props, classes, keyProductType } = this.props;
-
+        const slug = this.props.match.params.slug;
 
         // khi load lại trang props sẽ mất nên phải kiểm tra nếu nó mất thì nó đc gán lại giá trị đc lưu trong localstorage
 
         if (props === "") {
-            if (JSON.parse(localStorage.getItem("from")).from === "home") {
+            if (localStorage.getItem('from') && JSON.parse(localStorage.getItem("from")).from === "home") {
                 props = JSON.parse(localStorage.getItem("nameProductType")).name
                 keyProductType = JSON.parse(localStorage.getItem("keyProductType")).key
-            } else {
+            } else if (localStorage.getItem('from')) {
                 props = JSON.parse(localStorage.getItem("search")).keyword
+            } else {
+                productType = slug
             }
         }
         //lọc sản phẩm giống với từ khoá tìm kiếm
@@ -653,12 +654,12 @@ class SearchProduct extends Component {
                             <Grid container spacing={0} style={{ paddingLeft: 20 }}>
                                 {products.map((product, index) => {
                                     return (
-                                        <Grid 
-                                        key={product}
-                                        item xs={6} sm={2} key={index}>
-                                            <SearchCard
+                                        <Grid
                                             key={product}
-                                            data={product} rating={fbRatings} />
+                                            item xs={6} sm={2} key={index}>
+                                            <SearchCard
+                                                key={product}
+                                                data={product} rating={fbRatings} />
                                         </Grid>
                                     )
                                 })}

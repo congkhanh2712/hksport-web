@@ -50,12 +50,17 @@ class Info extends Component {
         }
     }
     uploadImage = () => {
-        const imgRef = storage.ref(`images/avatar/${Date.now()}.jpg`);
-        imgRef.put(this.state.file)
-            .then(async () => {
-                const url = await imgRef.getDownloadURL();
-                this.props.updateInfo(url)
-            })
+        console.log(this.state.file)
+        if (this.state.file != null) {
+            const imgRef = storage.ref(`images/avatar/${Date.now()}.jpg`);
+            imgRef.put(this.state.file)
+                .then(async () => {
+                    const url = await imgRef.getDownloadURL();
+                    this.props.updateInfo(url)
+                })
+        } else {
+            this.props.updateInfo(this.props.avatar)
+        }
     }
     onClick = () => {
         document.getElementById('avatar').click();
@@ -79,7 +84,7 @@ class Info extends Component {
             <Grid item xs={6}>
                 <div
                     className={classes.well}
-                    style={{ margin: 10, backgroundColor: 'white', borderRadius: 10, shadow: 10, height: 214 }}
+                    style={{ margin: 10, backgroundColor: 'white', borderRadius: 10, shadow: 10 }}
                 >
                     <Grid container spacing={0}>
                         <Grid container item xs={3} alignItems='center' justify='center'>
@@ -104,13 +109,13 @@ class Info extends Component {
                             </Button>
                             <Typography variant="subtitle1" gutterBottom>
                                 Ngày tham gia
-                                    </Typography>
+                            </Typography>
                             <Typography variant="subtitle1" gutterBottom style={{ marginTop: -10, marginLeft: 8 }}>
                                 {createDate}
                             </Typography>
                         </Grid>
                         <Grid item xs={4} style={{ borderLeft: `2px solid #f0f0f0`, marginLeft: -10 }}>
-                            <div style={{ marginLeft: 10 }}>
+                            <div style={{ marginInline: 10 }}>
                                 <Typography variant="subtitle1" gutterBottom style={{ marginTop: 8, wordWrap: "break-word" }}>
                                     Email: {email}
                                 </Typography>
@@ -119,7 +124,7 @@ class Info extends Component {
                                     <Grid item xs={1} style={{ marginTop: 8 }}>
                                         <Typography variant="subtitle1">
                                             Tên:
-                                                </Typography>
+                                        </Typography>
                                     </Grid>
                                     <Grid item xs>
                                         <TextField
@@ -136,7 +141,7 @@ class Info extends Component {
                                     <Grid item xs style={{ marginTop: 8 }}>
                                         <Typography variant="subtitle1">
                                             Số điện thoại:
-                                            </Typography>
+                                        </Typography>
                                     </Grid>
                                     <Grid item xs>
                                         <TextField
@@ -160,7 +165,7 @@ class Info extends Component {
                                         marginBottom: 5
                                     }}>
                                     Lưu thay đổi
-                                        </Button>
+                                </Button>
                             </div>
                         </Grid>
 
@@ -171,26 +176,26 @@ class Info extends Component {
                                 </Typography>
                                 <Typography variant="subtitle1" gutterBottom style={{ marginTop: 8 }}>
                                     Tổng điểm tích luỹ: {point} điểm
-                                        </Typography>
+                                </Typography>
                                 <Typography variant="subtitle1" gutterBottom style={{ marginTop: 8 }}>
                                     Điểm khả dụng: {pointAvailable} điểm
-                                        </Typography>
+                                </Typography>
                                 <ProgressBar variant="success" now={point / 25000 * 100} />
                                 <Grid container spacing={3}>
                                     <Grid item xs>
                                         <Typography variant="subtitle1" gutterBottom>
                                             0
-                                                </Typography>
+                                        </Typography>
                                     </Grid>
                                     <Grid item xs>
                                         <Typography variant="subtitle1" gutterBottom style={{ marginLeft: -13 }}>
                                             10000
-                                                </Typography>
+                                        </Typography>
                                     </Grid>
                                     <Grid item xs>
                                         <Typography variant="subtitle1" gutterBottom style={{ marginLeft: 40 }}>
                                             25000
-                                                </Typography>
+                                        </Typography>
                                     </Grid>
                                 </Grid>
                                 <Typography variant="caption" gutterBottom style={{ marginLeft: 35, paddingTop: 20 }}>

@@ -257,7 +257,7 @@ class App extends Component {
                         <SignIn tokenCheck={this.tokenCheck} />
                     </Route>
                     <Route path='/sign-up'>
-                        <SignUp />
+                        {({ location }) => <SignUp location={location} />}
                     </Route>
                     <Route path="/detail-product/:slug" exact>
                         {({ match }) => <DetailProduct isLogin={this.isLogin} match={match} />}

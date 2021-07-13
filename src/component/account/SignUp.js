@@ -86,6 +86,15 @@ class SignUp extends Component {
         success: true,
       })
     }
+    console.log(this.props.location)
+    const { state } = this.props.location;
+    if (state != undefined) {
+      this.setState({
+        email: state.fbemail,
+        avatar: state.avatar,
+        hoTen: state.name,
+      })
+    }
     window.addEventListener('resize', () => {
       this.setState({ width: window.innerWidth });
     })
@@ -149,8 +158,8 @@ class SignUp extends Component {
   onSubmit = (event) => {
     event.preventDefault();
     var { email, password, repassword, hoTen, sdt, address, tinhTP, quanHuyen, phuongXa } = this.state;
-    if (email.trim() != '' && password.trim() != '' && repassword.trim() != ''
-      && hoTen.trim() != '' && sdt.trim() != '' && address.trim() != ''
+    if (email.trim() != '' && hoTen.trim() != ''
+      && sdt.trim() != '' && address.trim() != ''
       & tinhTP != '' && quanHuyen != '' && phuongXa != '') {
       if (password !== repassword) {
         this.setState({
@@ -160,23 +169,53 @@ class SignUp extends Component {
         toast.error("Mật khẩu xác nhận không đúng, vui lòng kiểm tra lại");
       } else {
         if (sdt.length == 10 && this.ktraSDT(sdt) == true) {
-          instance.post('/mail', {
-            email
-          }).then(res => {
-            if (res.status == 200) {
-              if (res.data.succeed == true) {
-                this.setState({
-                  openDialog: true,
-                  verify: res.data.code,
-                })
-              } else {
-                toast.error("Email đăng ký không tồn tại");
-                this.setState({
-                  email: ''
-                })
+          const { state } = this.props.location;
+          if (state == undefined && password.trim() != '' && repassword.trim() != '') {
+            instance.post('/mail', {
+              email
+            }).then(res => {
+              console.log(res)
+              if (res.status == 200) {
+                if (res.data.succeed == true) {
+                  this.setState({
+                    openDialog: true,
+                    verify: res.data.code,
+                  })
+                } else {
+                  toast.error("Email đăng ký không tồn tại");
+                  this.setState({
+                    email: ''
+                  })
+                }
               }
-            }
-          })
+            })
+          } else if (state != undefined) {
+            const { email, avatar } = this.state;
+            instance.post('/auth/fbregister', {
+              token: state.credential,
+              name: this.state.hoTen,
+              phone: this.state.sdt,
+              address: this.state.address,
+              city: this.state.tinhTP,
+              location: this.state.location,
+              district: this.state.quanHuyen,
+              ward: this.state.phuongXa,
+              avatar, email,
+            }).then(res => {
+              if (res.data.succeed == true) {
+                toast.success(res.data.message);
+                setTimeout(() => {
+                  this.setState({
+                    success: true,
+                  })
+                }, 2000);
+              } else {
+                toast.error(res.data.message)
+              }
+            })
+          } else {
+            toast.error('Vui lòng nhập mật khẩu đăng ký')
+          }
         } else {
           toast.error('Vui lòng nhập đúng định dạng số điện thoại')
         }
@@ -186,6 +225,7 @@ class SignUp extends Component {
     }
   }
   verify = () => {
+    const { state } = this.props.location;
     if (this.state.verify == this.state.verifycode) {
       if (this.state.file != null) {
         const imgRef = storage.ref(`images/avatar/${Date.now()}.jpg`);
@@ -194,8 +234,10 @@ class SignUp extends Component {
             const url = await imgRef.getDownloadURL();
             this.postData(url)
           })
-      } else {
+      } else if (state == undefined) {
         this.postData('')
+      } else {
+        this.postData(this.state.avatar)
       }
       toast.success("Ok");
     } else {
@@ -251,6 +293,7 @@ class SignUp extends Component {
 
     const { success, width, avatar, file } = this.state;
     const { classes } = this.props;
+    const { state } = this.props.location;
     if (success === true) {
       return <Redirect to="/sign-in" />
     }
@@ -270,7 +313,7 @@ class SignUp extends Component {
                 <Grid container item xs={3} direction={'column'} alignItems={'center'}>
                   <Typography component="h1" variant="h5">
                     Ảnh đại diện
-          </Typography>
+                  </Typography>
                   <img
                     width={width / 7} height={width / 7}
                     src={file != null ? URL.createObjectURL(file) : avatar}
@@ -289,22 +332,24 @@ class SignUp extends Component {
                     color="primary"
                     style={{ marginBlock: 5 }}
                     component="span"
+                    disabled={state != undefined ? true : false}
                     onClick={this.onClick}>
                     Chọn hình ảnh
-                            </BootstrapButton>
+                  </BootstrapButton>
                   <BootstrapButton
                     variant="success"
                     color="primary"
                     style={{ marginBlock: 5 }}
+                    disabled={state != undefined ? true : false}
                     component="span"
                     onClick={() => { this.setState({ file: null }) }}>
                     Xóa hình ảnh
-                            </BootstrapButton>
+                  </BootstrapButton>
                 </Grid>
                 <Grid item xs={3}>
                   <Typography component="h1" variant="h5">
                     Thông tin cá nhân
-          </Typography>
+                  </Typography>
                   <TextField
                     variant="outlined"
                     margin="normal"
@@ -314,33 +359,41 @@ class SignUp extends Component {
                     label="Email đăng nhập"
                     name="email"
                     autoComplete="email"
+                    value={this.state.email}
+                    disabled={state != undefined ? true : false}
                     autoFocus
                     onChange={this.onChange}
                   />
-                  <TextField
-                    variant="outlined"
-                    margin="normal"
-                    required
-                    fullWidth
-                    name="password"
-                    label="Mật khẩu"
-                    type="password"
-                    id="password"
-                    autoComplete="current-password"
-                    onChange={this.onChange}
-                  />
-                  <TextField
-                    variant="outlined"
-                    margin="normal"
-                    required
-                    fullWidth
-                    name="repassword"
-                    label="Nhập lại mật khẩu"
-                    type="password"
-                    id="repassword"
-                    autoComplete="current-password"
-                    onChange={this.onChange}
-                  />
+                  {state != undefined
+                    ? null
+                    : <TextField
+                      variant="outlined"
+                      margin="normal"
+                      required
+                      fullWidth
+                      name="password"
+                      label="Mật khẩu"
+                      type="password"
+                      id="password"
+                      autoComplete="current-password"
+                      onChange={this.onChange}
+                    />
+                  }
+                  {state != undefined
+                    ? null
+                    : <TextField
+                      variant="outlined"
+                      margin="normal"
+                      required
+                      fullWidth
+                      name="repassword"
+                      label="Nhập lại mật khẩu"
+                      type="password"
+                      id="repassword"
+                      autoComplete="current-password"
+                      onChange={this.onChange}
+                    />
+                  }
                   <TextField
                     variant="outlined"
                     margin="normal"
@@ -348,6 +401,8 @@ class SignUp extends Component {
                     fullWidth
                     name="hoTen"
                     label="Họ và tên"
+                    value={this.state.hoTen}
+                    disabled={state != undefined ? true : false}
                     id="password"
                     autoComplete="current-password"
                     onChange={this.onChange}
@@ -356,7 +411,7 @@ class SignUp extends Component {
                 <Grid container item xs={3} >
                   <Typography component="h1" variant="h5">
                     Địa chỉ
-          </Typography>
+                  </Typography>
                   <TextField
                     variant="outlined"
                     margin="normal"
@@ -437,7 +492,7 @@ class SignUp extends Component {
                     className={classes.submit}
                   >
                     ĐĂNG KÝ
-            </Button>
+                  </Button>
                   <Grid container>
                     <Grid item xs>
                       <Link href="#" variant="body2">
@@ -462,10 +517,10 @@ class SignUp extends Component {
           <DialogContent>
             <DialogContentText>
               Mã xác thực vừa được gửi tới email của bạn.
-          </DialogContentText>
+            </DialogContentText>
             <DialogContentText>
               Vui lòng kiểm tra email và nhập mã xác nhận vào trường bên dưới.
-          </DialogContentText>
+            </DialogContentText>
             <TextField
               autoFocus
               margin="dense"
@@ -478,10 +533,10 @@ class SignUp extends Component {
           <DialogActions>
             <Button onClick={() => { this.setState({ openDialog: false }) }} color="primary">
               Cancel
-                                    </Button>
+            </Button>
             <Button onClick={this.verify} color="primary">
               Xác nhận
-                                    </Button>
+            </Button>
           </DialogActions>
         </Dialog>
         <Toaster
