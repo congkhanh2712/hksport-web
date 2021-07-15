@@ -151,6 +151,7 @@ class CommentCard extends Component {
             instance.post('/rating/replied/' + detail.key, {
                 content: this.state.replycmt
             }).then(res => {
+                console.log(res)
                 if (res.status == 200 && res.data.succeed == true) {
                     alert(res.data.message);
                     this.setState({

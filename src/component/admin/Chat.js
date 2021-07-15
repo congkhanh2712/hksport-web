@@ -37,6 +37,9 @@ class Chat extends Component {
         fbApp.database().ref('TblMessage').on('child_changed',val=>{
             this.getData();
         })
+        fbApp.database().ref('TblMessage').on('child_added',val=>{
+            this.getData();
+        })
     }
     columnStyle = (width) => {
         var style = {

@@ -14,6 +14,7 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import Checkbox from '@material-ui/core/Checkbox';
 import ThumbUpIcon from '@material-ui/icons/ThumbUp';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
+import Box from '@material-ui/core/Box';
 
 
 
@@ -51,6 +52,7 @@ class UserList extends Component {
     }
     componentDidUpdate(prevProps, prevState) {
         if (prevProps.data != this.props.data) {
+            console.log(this.props.data)
             this.setState({
                 data: this.props.data,
             })
@@ -219,20 +221,26 @@ class UserList extends Component {
                                         />
                                     </ListItemIcon>
                                     <Grid item
-                                        style={{ width: width * 0.15, paddingInline: 10, maxWidth: width * 0.15 }}>
-                                        <Typography variant="subtitle1" gutterBottom
-                                            style={item.lastmessage.isMe == true && item.lastmessage.Seen == false
-                                                ? { fontWeight: 'bold' } : null}>
+                                        style={{ width: width * 0.14, paddingInline: 10, maxWidth: width * 0.14 }}>
+                                        <Box
+                                            overflow="hidden"
+                                            component="div" textOverflow="ellipsis"
+                                            fontFamily={`Arial, Helvetica, sans-serif`}
+                                            fontWeight={item.lastmessage.isMe == true && item.lastmessage.Seen == false
+                                                ? 'bold' : null}>
                                             {item.user.Name}
-                                        </Typography>
-                                        <Typography variant="body2" gutterBottom
-                                            style={item.lastmessage.isMe == true && item.lastmessage.Seen == false
-                                                ? { fontWeight: 'bold', width: '100%' } : null}>
+                                        </Box>
+                                        <Box
+                                            overflow="hidden"
+                                            component="div" textOverflow="ellipsis"
+                                            fontFamily={`Arial, Helvetica, sans-serif`}
+                                            fontWeight={item.lastmessage.isMe == true && item.lastmessage.Seen == false
+                                                ? 'bold' : null}>
                                             {item.lastmessage.isMe == false ? 'Bạn: ' : ''}
                                             {item.lastmessage.Message == ''
                                                 ? <ThumbUpIcon color='action' />
                                                 : item.lastmessage.Message}
-                                        </Typography>
+                                        </Box>
                                     </Grid>
                                     <Grid container item
                                         justify={'flex-end'}
