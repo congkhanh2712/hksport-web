@@ -148,6 +148,7 @@ class CommentCard extends Component {
         } else if (user == null) {
             alert("bạn cần đăng nhập để thực hiện chức năng này")
         } else {
+            console.log(detail.key)
             instance.post('/rating/replied/' + detail.key, {
                 content: this.state.replycmt
             }).then(res => {

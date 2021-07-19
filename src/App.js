@@ -119,7 +119,11 @@ class App extends Component {
         if (localStorage && localStorage.getItem('user')) {
             var user = JSON.parse(localStorage.getItem("user"));
             this.isLogin(user);
-            this.tokenCheck(0);
+            if (parseInt(user.expired_time) - Date.now() < 300000) {
+                this.tokenCheck(0);
+            } else {
+                this.tokenCheck(1);
+            }
         };
     }
     tokenCheck = (type) => {

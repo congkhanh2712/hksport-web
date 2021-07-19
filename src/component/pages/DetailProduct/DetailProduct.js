@@ -82,12 +82,13 @@ class SearchCard extends Component {
         if (user == null) {
             alert("Bạn cần đăng nhập để thực hiện chức năng này")
             return;
+        } else {
+            this.setState({ liked: !this.state.liked });
+            instance.put('/seen/' + slug, {
+                like: !this.state.liked,
+                remove: null
+            })
         }
-        this.setState({ liked: !this.state.liked });
-        instance.put('/seen/' + this.props.product_id, {
-            like: !this.state.liked,
-            remove: null
-        })
     }
     addToCart = () => {
         var user = null
@@ -259,12 +260,10 @@ class SearchCard extends Component {
                         if (res.data.result == true) {
                             this.setState({
                                 title: "Xoá sp khỏi danh sách yêu thích",
-                                color: "red",
                             })
                         } else {
                             this.setState({
                                 title: "Thêm sp vào danh sách yêu thích",
-                                color: "pink",
                             })
                         }
                     }
@@ -317,7 +316,7 @@ class SearchCard extends Component {
         })
     };
     render() {
-        const { product, size, loading, imagelist, open, src } = this.state;
+        const { product, size, loading, imagelist, open, src, liked } = this.state;
         const slug = this.props.match.params.slug;
         var { classes } = this.props;
         var sp = 0;
@@ -386,7 +385,9 @@ class SearchCard extends Component {
                                             <Grid item >
                                                 <Tooltip title={this.state.title} placement="right">
                                                     <IconButton onClick={this.likedProduct}>
-                                                        <FavoriteIcon style={{ color: this.state.color }} />
+                                                        <FavoriteIcon style={liked == true
+                                                            ? { color: 'red' }
+                                                            : { color: 'pink' }} />
                                                     </IconButton>
                                                 </Tooltip>
                                             </Grid>
